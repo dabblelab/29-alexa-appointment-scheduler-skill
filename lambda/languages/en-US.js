@@ -29,6 +29,7 @@ module.exports = {
             `Good bye`,
             `Okay. I'll be here if you need me.`
         ],
+
         'ENV_NOT_CONFIGURED' : 'The dot ENV file is not configured. See the readme for help.',
         'PERMISSIONS_REQUIRED': 'Please enable profile permissions in the Amazon Alexa app.',
         'EMAIL_REQUIRED': `It looks like you don't have an email set. You can set your email in the Alexa companion app.`,
@@ -37,6 +38,7 @@ module.exports = {
         'NAME_REQUIRED_REPROMPT': `Please set your name in the Alexa companion app.`,
         'PHONE_REQUIRED': `It looks like you don't have your mobile number set. You can set your mobile number in the companion app.`,
         'PHONE_REQUIRED_REPROMPT': `Please set your phone number in the Alexa companion app.`,
-        'ERROR': 'Uh Oh. Looks like something went wrong.'
+        'ERROR': `Sorry, I didn't get that. Could you say that again?`,
+        'ERROR_REPROMPT': `Sorry, I didn't get that. Could you say that again?`
     }
 }
