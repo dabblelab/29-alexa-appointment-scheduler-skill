@@ -6,7 +6,7 @@ The advanced version integrates with a scheduling API (https://developers.acuity
 
 ### HAPPY PATH:
 
-USER: Alexa, tell {invocation-name} I’d like to schedule an appointment. 
+USER: Alexa, tell {invocation-name} I'd like to schedule an appointment. 
 
 ALEXA: Great,  what day or date would you like to schedule your appointment on?
 
