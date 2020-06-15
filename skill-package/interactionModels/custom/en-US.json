@@ -1,0 +1,190 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "demo skill",
+      "intents": [
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AboutIntent",
+          "slots": [],
+          "samples": [
+            "tell me about this template",
+            "about this template",
+            "about this skill",
+            "tell me more"
+          ]
+        },
+        {
+          "name": "ScheduleIntent",
+          "slots": [
+            {
+              "name": "date",
+              "type": "AMAZON.DATE",
+              "samples": [
+                "on {date}",
+                "I\u0027d like to meet on {date}",
+                "how about {date}",
+                "{date}"
+              ]
+            },
+            {
+              "name": "time",
+              "type": "AMAZON.TIME",
+              "samples": [
+                "how about {time}",
+                "at {time}",
+                "{time}"
+              ]
+            },
+            {
+              "name": "name",
+              "type": "AMAZON.Person",
+              "samples": [
+                "my name is {name}",
+                "{name}"
+              ]
+            },
+            {
+              "name": "phone",
+              "type": "AMAZON.PhoneNumber",
+              "samples": [
+                "my number is {phone}",
+                "{phone}"
+              ]
+            }
+          ],
+          "samples": [
+            "setup an appointment",
+            "setup a meeting ",
+            "set up a call",
+            "schedule a call",
+            "schedule a meeting",
+            "schedule an appointment"
+          ]
+        }
+      ],
+      "types": []
+    },
+    "dialog": {
+      "intents": [
+        {
+          "name": "ScheduleIntent",
+          "confirmationRequired": true,
+          "prompts": {
+            "confirmation": "Confirm.Intent.153503252364"
+          },
+          "slots": [
+            {
+              "name": "date",
+              "type": "AMAZON.DATE",
+              "elicitationRequired": true,
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.153503252364.817553974409"
+              }
+            },
+            {
+              "name": "time",
+              "type": "AMAZON.TIME",
+              "elicitationRequired": true,
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.153503252364.190769526364"
+              }
+            },
+            {
+              "name": "name",
+              "type": "AMAZON.Person",
+              "elicitationRequired": true,
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.153503252364.1550516431899"
+              }
+            },
+            {
+              "name": "phone",
+              "type": "AMAZON.PhoneNumber",
+              "elicitationRequired": true,
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.153503252364.16028220185"
+              }
+            }
+          ]
+        }
+      ],
+      "delegationStrategy": "ALWAYS"
+    },
+    "prompts": [
+      {
+        "id": "Elicit.Slot.153503252364.817553974409",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "What day or date would you like to meet?"
+          }
+        ]
+      },
+      {
+        "id": "Elicit.Slot.153503252364.190769526364",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "What time works best?"
+          },
+          {
+            "type": "PlainText",
+            "value": "What time would you like to meet?"
+          }
+        ]
+      },
+      {
+        "id": "Elicit.Slot.153503252364.1550516431899",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Please tell me your full name."
+          },
+          {
+            "type": "PlainText",
+            "value": "What is your full name?"
+          }
+        ]
+      },
+      {
+        "id": "Elicit.Slot.153503252364.16028220185",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "What is your telephone number?"
+          }
+        ]
+      },
+      {
+        "id": "Confirm.Intent.153503252364",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "So, I have your meeting request on {date} at {time} and you phone number as {phone} . Is that correct?"
+          }
+        ]
+      }
+    ]
+  },
+  "version": "3"
+}
