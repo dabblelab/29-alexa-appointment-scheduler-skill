@@ -533,10 +533,10 @@ function checkAvailability(date, time, durration, timezone) {
       if(err)
         reject(err);
       else{
-        if(resp.data.calendars.busy && resp.data.calendars.busy)
-          resolve(true);
-        else 
+        if(resp.data.calendars.busy && resp.data.calendars.busy.length)
           resolve(false);
+        else 
+          resolve(true);
       }
     });
   });
