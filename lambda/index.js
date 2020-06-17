@@ -14,6 +14,7 @@ const sprintf = require('i18next-sprintf-postprocessor');
 const handlebars = require('handlebars');
 const luxon = require('luxon');
 const ics = require('ics');
+const { google } = require('googleapis');
 
 /* CONSTANTS */
 const constants = {
@@ -483,9 +484,61 @@ function checkAvailability(date, time, durration, timezone) {
   * TODO: this function should check Google free/busy api to see if
   * the requsted appointment time is available
   */
-
+  const {CLIENT_ID, CLIENT_SECRET, REDIRECT_URIS, ACCESS_TOKEN, REFRESH_TOKEN, TOKEN_TYPE, EXPIRE_DATE, SCOPE} = process.env;
   return new Promise(function (resolve, reject) {
-    resolve(true);
+
+
+    /** SET UP Auth */
+    const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URIS);
+    let tokens = {
+      access_token : ACCESS_TOKEN,
+      scope : SCOPE,
+      token_type : TOKEN_TYPE,
+      expiry_date : EXPIRE_DATE
+    };
+
+    if(REFRESH_TOKEN)
+      tokens.refresh_token = REFRESH_TOKEN;
+
+    authClient.oauth2Client.credentials = tokens
+
+    /** CREATE Calendar instance */
+    const Calendar = google.calendar({
+        version: 'v3',
+        auth : oAuth2Client
+    });
+
+    /** RequestBody
+     * @items Array [{id : "<email-address>"}]
+     * @timeMax String 2020-06-17T11:30:00.000Z
+     * @timeMin String 2020-06-17T11:00:00.000Z
+     * @timeZone String America/New_York
+     */
+
+     const query = {
+       items : [
+         {
+           id : constants.NOTIFY_EMAIL
+         }
+       ],
+       timeMax : "2020-06-17T11:30:00.000Z",
+       timeMin : "2020-06-17T11:00:00.000Z",
+       timeZone : timezone
+     };
+
+    Calendar.Calendar.freebusy.query({
+      requestBody : query
+    }, (err, resp) => {
+
+      if(err)
+        reject(err);
+      else{
+        if(resp.data.calendars.busy && resp.data.calendars.busy)
+          resolve(true);
+        else 
+          resolve(false);
+      }
+    });
   });
 }
 

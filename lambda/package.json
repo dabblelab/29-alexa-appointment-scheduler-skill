@@ -21,6 +21,7 @@
     "i18next-sprintf-postprocessor" : "^0.2.2",
     "ics" : "^2.22.1",
     "handlebars": "^4.0.11",
-    "luxon" : "^1.24.1"
+    "luxon" : "^1.24.1",
+    "googleapis": "^52.1.0"
   }
 }
