@@ -1,11 +1,30 @@
 {
   "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "en-US": {
+          "summary": "Sample Short Description",
+          "examplePhrases": [
+            "Alexa open hello world",
+            "hello",
+            "help"
+          ],
+          "name": "Template 29 - Appointment Scheduling",
+          "description": "Sample Full Description",
+          "smallIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-sm.png",
+          "largeIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-lg.png"
+        }
+      },
+      "isAvailableWorldwide": true,
+      "testingInstructions": "Sample Testing Instructions.",
+      "category": "KNOWLEDGE_AND_TRIVIA",
+      "distributionCountries": []
+    },
     "apis": {
       "custom": {
         "endpoint": {
-          "uri": ""
-        },
-        "interfaces": []
+          "uri": "arn:aws:lambda:us-east-1:851751148026:function:ask-template29-appointment-default-default-1592247187305"
+        }
       }
     },
     "permissions": [
@@ -19,14 +38,6 @@
         "name": "alexa::profile:mobile_number:read"
       }
     ],
-    "publishingInformation": {
-      "locales": {
-        "en-US": {
-          "name": "Scheduling Example",
-          "smallIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-sm.png",
-          "largeIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-lg.png"
-        }
-      }
-    }
+    "manifestVersion": "1.0"
   }
 }

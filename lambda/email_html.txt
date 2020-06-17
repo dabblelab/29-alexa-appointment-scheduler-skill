@@ -1,8 +1,0 @@
-<strong>A meeting has been scheduled by Alexa. Here are the details:</strong>
-<br/>
-Timezone: {{userTimezone}}<br/>
-Name: {{profileName}}<br/>
-Email: {{profileEmail}}<br/>
-Mobile Number: {{profileMobileNumber}}<br/>
-Date: {{appointmentDate}}<br/>
-Time: {{appointmentTime}}<br/> 

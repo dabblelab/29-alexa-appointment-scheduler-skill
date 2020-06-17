@@ -7,15 +7,20 @@
 */
 
 const Alexa = require('ask-sdk-core');
+const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
 const i18n = require('i18next');
 const sprintf = require('i18next-sprintf-postprocessor');
 const handlebars = require('handlebars');
-const fs = require('fs')
 const luxon = require('luxon');
+const ics = require('ics');
 
 /* CONSTANTS */
-const constants = require('./constants.json');
+const constants = {
+  "FROM_NAME": "Dabble Lab",
+  "FROM_EMAIL": "learn@dabblelab.com",
+  "NOTIFY_EMAIL": "steve@dabblelab.com",
+};
 
 /* LANGUAGE STRINGS */
 const languageStrings = {
@@ -83,7 +88,7 @@ const InvalidPermissionsHandler = {
           .speak(attributes.t('EMAIL_REQUIRED'))
           .withSimpleCard(attributes.t('SKILL_NAME'), attributes.t('EMAIL_REQUIRED_REPROMPT'))
           .getResponse();
-      case "no_mobile_number":
+      case "no_phone":
         return responseBuilder
           .speak(attributes.t('PHONE_REQUIRED'))
           .withSimpleCard(attributes.t('SKILL_NAME'), attributes.t('PHONE_REQUIRED_REPROMPT'))
@@ -95,12 +100,9 @@ const InvalidPermissionsHandler = {
           .getResponse();
     }
 
-    //TODO: decide how to deal with this
-    let speakOutput = `Need to deal with ${attributes.permissionsError}`;
+    //should never get this far
+    throw new Error(`${attributes.permissionsError} is not a known permission`);
 
-    return handlerInput.responseBuilder
-      .speak(speakOutput)
-      .getResponse();
   },
 };
 
@@ -112,11 +114,7 @@ const LaunchRequestHandler = {
 
     const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
 
-    const skillName = requestAttributes.t('SKILL_NAME');
-
-    handlerInput.attributesManager.setRequestAttributes({ yesNoReason: "schedule_appointment" });
-
-    const speakOutput = requestAttributes.t('GREETING', skillName);
+    const speakOutput = requestAttributes.t('GREETING', requestAttributes.t('SKILL_NAME'));
     const repromptOutput = requestAttributes.t('GREETING_REPROMPT');
 
     return handlerInput.responseBuilder
@@ -164,25 +162,29 @@ const InProgressScheduleAppointmentIntentHandler = {
     const { requestEnvelope, serviceClientFactory, responseBuilder } = handlerInput;
     console.log(`IN_PROGRESS: ${JSON.stringify(requestEnvelope.request.intent)}`);
 
+    //custom intent confirmation for ScheduleAppointmentIntent 
     if (requestEnvelope.request.intent.confirmationStatus === "NONE"
       && requestEnvelope.request.intent.slots.appointmentDate.value
       && requestEnvelope.request.intent.slots.appointmentTime.value) {
 
-      let { deviceId } = requestEnvelope.context.System.device;
-      const upsServiceClient = serviceClientFactory.getUpsServiceClient();
+      const { deviceId } = requestEnvelope.context.System.device;
 
-      const appointmentDate = `${Alexa.getSlotValue(handlerInput.requestEnvelope, "appointmentDate")}T${Alexa.getSlotValue(handlerInput.requestEnvelope, "appointmentTime")}`
-      let userTime = luxon.DateTime.fromISO(appointmentDate, { zone: await upsServiceClient.getSystemTimeZone(deviceId) });
+      const requestAttributes = handlerInput.attributesManager.getRequestAttributes(),
+        appointmentDate = `${Alexa.getSlotValue(handlerInput.requestEnvelope, "appointmentDate")}T${Alexa.getSlotValue(handlerInput.requestEnvelope, "appointmentTime")}`,
+        upsServiceClient = serviceClientFactory.getUpsServiceClient(),
+        userTime = luxon.DateTime.fromISO(appointmentDate, { zone: await upsServiceClient.getSystemTimeZone(deviceId) }),
+        speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM', userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE)),
+        repromptOutput = requestAttributes.t('APPOINTMENT_CONFIRM_REPROMPT', userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE));
 
-      //TODO: use localization for speakOutput
       return handlerInput.responseBuilder
-        .speak(`<speak>I have your appointment request for ${userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE)}. Is that correct?</speak>`)
-        .reprompt(`Should I send your appointment request for ${userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE)}?`)
+        .speak(speakOutput)
+        .reprompt(repromptOutput)
         .addConfirmIntentDirective()
         .getResponse();
     }
 
     const currentIntent = handlerInput.requestEnvelope.request.intent;
+
     return handlerInput.responseBuilder
       .addDelegateDirective(currentIntent)
       .getResponse();
@@ -196,60 +198,53 @@ const CompleteScheduleAppointmentIntentHandler = {
       && handlerInput.requestEnvelope.request.dialogState === 'COMPLETED';
   },
   async handle(handlerInput) {
-    let speakOutput = "This should never be heard";
 
     const { requestEnvelope, serviceClientFactory, responseBuilder } = handlerInput;
 
-    console.log(`COMPLETED: ${JSON.stringify(requestEnvelope.request.intent)}`);
+    const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
 
     //user denies the intent confirmation
     if (requestEnvelope.request.intent.confirmationStatus === "DENIED") {
-      //TODO: use localization for speakOutput
+      const speakOutput = requestAttributes.t('NO_CONFIRM');
+      const repromptOutput = requestAttributes.t('NO_CONFIRM_REPROMPT');
+
       return handlerInput.responseBuilder
-        .speak(`Okay, to start over you can say: schedule an appointment, or to cancel say stop.`)
-        .reprompt("You can say schedule an appointment to start over, or stop to cancel.")
+        .speak(speakOutput)
+        .reprompt(repromptOutput)
         .getResponse();
     }
 
     try {
 
-      const helpers = require('./helpers.js');
-
       let { deviceId } = requestEnvelope.context.System.device;
+
       const upsServiceClient = serviceClientFactory.getUpsServiceClient();
 
-      const sgMail = require('@sendgrid/mail');
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      const mobileNumber = await upsServiceClient.getProfileMobileNumber();
 
       const appointmentData = {
-        title: `Appointment with ${await upsServiceClient.getProfileName()}`,
+        title: requestAttributes.t('APPOINTMENT_TITLE', await upsServiceClient.getProfileName()),
+        description: requestAttributes.t('APPOINTMENT_DESCRIPTION', await upsServiceClient.getProfileName()),
         userTimezone: await upsServiceClient.getSystemTimeZone(deviceId),
         appointmentDate: Alexa.getSlotValue(handlerInput.requestEnvelope, "appointmentDate"),
         appointmentTime: Alexa.getSlotValue(handlerInput.requestEnvelope, "appointmentTime"),
         profileName: await upsServiceClient.getProfileName(),
         profileEmail: await upsServiceClient.getProfileEmail(),
-        profileMobileNumber: JSON.stringify(await upsServiceClient.getProfileMobileNumber())
+        profileMobileNumber: `+${mobileNumber.countryCode}${mobileNumber.phoneNumber}`
       }
 
-      //attachment
-      const attachment = new Buffer(await helpers.saveAppointmentS3(appointmentData));
-
-      const appointmentDate = `${appointmentData.appointmentDate}T${appointmentData.appointmentTime}`
+      const appointmentDate = `${appointmentData.appointmentDate}T${appointmentData.appointmentTime}`;
       let userTime = luxon.DateTime.fromISO(appointmentDate, { zone: appointmentData.userTimezone });
 
-      //TODO: get speakOutput from language file
-      speakOutput = `Your appointment on ${userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE)}, has been scheduled.`;
-
-      //get email body from templates
-      const textBodyTemplate = handlebars.compile(fs.readFileSync('email_text.txt').toString('utf-8'));
-      const htmlBodyTemplate = handlebars.compile(fs.readFileSync('email_html.txt').toString('utf-8'));
+      //save to s3 and get attachment
+      const attachment = new Buffer(await saveAppointmentS3(appointmentData));
 
       const msg = {
-        to: process.env.NOTIFY_EMAIL,
-        from: process.env.FROM_EMAIL,
+        to: constants.NOTIFY_EMAIL,
+        from: constants.FROM_EMAIL,
         subject: appointmentData.title,
-        text: textBodyTemplate(appointmentData),
-        html: htmlBodyTemplate(appointmentData),
+        text: getEmailBodyText(appointmentData),
+        html: getEmailBodyHtml(appointmentData),
         attachments: [
           {
             content: attachment.toString("base64"),
@@ -260,7 +255,15 @@ const CompleteScheduleAppointmentIntentHandler = {
         ]
       };
 
+      const sgMail = require('@sendgrid/mail');
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
       await sgMail.send(msg);
+
+      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE));
+
+      return handlerInput.responseBuilder
+        .speak(speakOutput)
+        .getResponse();
 
     } catch (error) {
 
@@ -271,25 +274,12 @@ const CompleteScheduleAppointmentIntentHandler = {
       }
     }
 
+    //should never reach this point
+    let speakOutput = "This should never be heard";
     return handlerInput.responseBuilder
       .speak(speakOutput)
       .getResponse();
-  },
-};
 
-//TODO: GetAppointmentsIntentHandler function needs to be completed
-const GetAppointmentsIntentHandler = {
-  canHandle(handlerInput) {
-    return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-      && handlerInput.requestEnvelope.request.intent.name === 'GetAppointmentsIntent';
-  },
-  handle(handlerInput) {
-    const speakOutput = `This will return scheduled appointments when it is completed`;
-
-    return handlerInput.responseBuilder
-      .speak(speakOutput)
-      .reprompt(speakOutput)
-      .getResponse();
   },
 };
 
@@ -369,7 +359,6 @@ const SessionEndedRequestHandler = {
     return handlerInput.requestEnvelope.request.type === 'SessionEndedRequest';
   },
   handle(handlerInput) {
-    //TODO: use localization for speakOutput
     console.log(`Session ended with reason: ${handlerInput.requestEnvelope.request.reason}`);
 
     return handlerInput.responseBuilder.getResponse();
@@ -396,11 +385,19 @@ const ErrorHandler = {
 };
 
 /* INTERCEPTORS */
-const InvalidConfigInterceptor = {
+const EnvironmentCheckInterceptor = {
   process(handlerInput) {
+
+    //load environment variable from .env
     const result = dotenv.config();
 
-    if (result.error) {
+    //check for process.env.S3_PERSISTENCE_BUCKET
+    if (!process.env.S3_PERSISTENCE_BUCKET) {
+      handlerInput.attributesManager.setRequestAttributes({ invalidConfig: true });
+    }
+
+    //check for process.env.SENDGRID_API_KEY
+    if (!process.env.SENDGRID_API_KEY) {
       handlerInput.attributesManager.setRequestAttributes({ invalidConfig: true });
     }
 
@@ -429,7 +426,7 @@ const PermissionsCheckInterceptor = {
 
       if (!profileMobileNumber) {
         //no mobile number
-        handlerInput.attributesManager.setRequestAttributes({ permissionsError: "no_mobile_number" });
+        handlerInput.attributesManager.setRequestAttributes({ permissionsError: "no_phone" });
       }
 
     } catch (error) {
@@ -477,8 +474,113 @@ const LocalizationInterceptor = {
   },
 };
 
+
 /* FUNCTIONS */
 
+function checkAvailability(date, time, durration, timezone) {
+
+  /*
+  * TODO: this function should check Google free/busy api to see if
+  * the requsted appointment time is available
+  */
+
+  return new Promise(function (resolve, reject) {
+    resolve(true);
+  });
+}
+
+function getEmailBodyText(appointmentData) {
+
+  let textBody = `A meeting has been scheduled by Alexa. Here are the details:\n`;
+
+  textBody += `Timezone: {{userTimezone}}\n`,
+    textBody += `Name: {{profileName}}\n`,
+    textBody += `Email: {{profileEmail}}\n`,
+    textBody += `Mobile Number: {{profileMobileNumber}}\n`,
+    textBody += `Date: {{appointmentDate}}\n`,
+    textBody += `Time: {{appointmentTime}}\n`;
+
+  const textBodyTemplate = handlebars.compile(textBody);
+
+  return textBodyTemplate(appointmentData);
+
+}
+
+function getEmailBodyHtml(appointmentData) {
+
+  let htmlBody = `<strong>A meeting has been scheduled by Alexa. Here are the details:</strong><br/>`;
+
+  htmlBody += `Timezone: {{userTimezone}}<br/>`,
+    htmlBody += `Name: {{profileName}}<br/>`,
+    htmlBody += `Email: {{profileEmail}}<br/>`,
+    htmlBody += `Mobile Number: {{profileMobileNumber}}<br/>`,
+    htmlBody += `Date: {{appointmentDate}}<br/>`,
+    htmlBody += `Time: {{appointmentTime}}<br/>`;
+
+  const htmlBodyTemplate = handlebars.compile(htmlBody);
+
+  return htmlBodyTemplate(appointmentData);
+
+}
+
+function saveAppointmentS3(appointmentData) {
+
+  return new Promise(function (resolve, reject) {
+
+    const appointmentDate = `${appointmentData.appointmentDate}T${appointmentData.appointmentTime}`;
+    let userTime = luxon.DateTime.fromISO(appointmentDate, { zone: appointmentData.userTimezone });
+    var hostTime = userTime.setZone('utc');
+
+    const event = {
+      start: [hostTime.year, hostTime.month, hostTime.day, hostTime.hour, hostTime.minute],
+      startInputType: 'utc',
+      endInputType: 'utc',
+      productId: "dabblelab/ics",
+      duration: { hours: 0, minutes: 30 },
+      title: appointmentData.title,
+      description: appointmentData.description,
+      status: 'CONFIRMED',
+      busyStatus: 'BUSY',
+      organizer: { name: constants.FROM_NAME, email: constants.FROM_EMAIL },
+      attendees: [
+        { name: appointmentData.profileName, email: appointmentData.profileEmail, rsvp: true, partstat: 'ACCEPTED', role: 'REQ-PARTICIPANT' },
+        { name: 'Steve Tingiris', email: 'steve@dabblelabs.com', dir: 'https://linkedin.com/in/tingiris', role: 'OPT-PARTICIPANT' }
+      ]
+    }
+
+    ics.createEvent(event, (error, value) => {
+      if (error) {
+        console.log(error)
+        return
+      }
+
+      const s3 = new AWS.S3();
+
+      const params = {
+        Body: value,
+        Bucket: process.env.S3_PERSISTENCE_BUCKET,
+        Key: `appointments/${appointmentData.appointmentDate}/${event.title.replace(/ /g, "-").toLowerCase()}-${luxon.DateTime.utc().toMillis()}.ics`
+      };
+
+      s3.putObject(params, function (err, data) {
+        if (err) {
+          // error
+          console.log(err, err.stack);
+          reject(err);
+        }
+        else {
+          //success
+          console.log(data);
+          resolve(value);
+        }
+
+      });
+
+    });
+
+  });
+
+}
 
 /* LAMBDA SETUP */
 const skillBuilder = Alexa.SkillBuilders.custom();
@@ -491,7 +593,6 @@ exports.handler = skillBuilder
     StartedScheduleAppointmentIntentHandler,
     InProgressScheduleAppointmentIntentHandler,
     CompleteScheduleAppointmentIntentHandler,
-    GetAppointmentsIntentHandler,
     YesIntentHandler,
     NoIntentHandler,
     HelpIntentHandler,
@@ -499,8 +600,8 @@ exports.handler = skillBuilder
     SessionEndedRequestHandler
   )
   .addRequestInterceptors(
-    PermissionsCheckInterceptor, 
-    InvalidConfigInterceptor, 
+    EnvironmentCheckInterceptor,
+    PermissionsCheckInterceptor,
     LocalizationInterceptor
   )
   .addErrorHandlers(ErrorHandler)

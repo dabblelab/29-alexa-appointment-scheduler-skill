@@ -1,7 +1,0 @@
-{
-    "SLILL_NAME" : "Appointment Scheduler",
-    "FROM_EMAIL" : "learn@dabblelab.com",
-    "FROM_NAME" : "Admin",
-    "APPOINTMENT_DESCRIPTION" : "An appointment scheduled by Alexa",
-    "APPOINTMENT_URL" : "https://dabblelab.com"
-}

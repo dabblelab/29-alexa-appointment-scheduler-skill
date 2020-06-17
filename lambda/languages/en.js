@@ -10,7 +10,7 @@ module.exports = {
         'GREETING_REPROMPT' : [
             `Would you like to schedule an appointment?`,
             `Can I schedule an appointment for you?`,
-            `I can schedule an appointment for you. Would you like to get started?`,
+            `I can schedule an appointment for you. Would you like to get started?`, 
         ],
         'SCHEDULE_BEGIN' : [
             `Okay, let's schedule an appointment.`,
@@ -29,7 +29,20 @@ module.exports = {
             `Good bye`,
             `Okay. I'll be here if you need me.`
         ],
-        'ENV_NOT_CONFIGURED' : 'The dot ENV file is not configured. See the readme for help.',
+        'APPOINTMENT_CONFIRM' : [
+            `I have your appointment request for %s. Is that correct?`
+        ],
+        'APPOINTMENT_CONFIRM_REPROMPT' : [
+            `Should I send your appointment request for %s?`
+        ],
+        'APPOINTMENT_CONFIRM_COMPLETED' : [
+            `Your appointment on %s has been scheduled.`
+        ],
+        'APPOINTMENT_TITLE' : `Appointment with %s`,
+        'APPOINTMENT_DESCRIPTION' : `An appointment schedule by Alexa`,
+        'NO_CONFIRM' : `Okay, to start over you can say: schedule an appointment, or to cancel say stop.`,
+        'NO_CONFIRM_REPROMOT' : "You can say schedule an appointment to start over, or stop to cancel.",
+        'ENV_NOT_CONFIGURED' : 'One or more environment variables is not set. Please see the readme file for help.',
         'PERMISSIONS_REQUIRED': 'Please enable profile permissions in the Amazon Alexa app.',
         'EMAIL_REQUIRED': `It looks like you don't have an email set. You can set your email in the Alexa companion app.`,
         'EMAIL_REQUIRED_REPROMPT': `Please set your email address in the Alexa companion app.`,
@@ -37,6 +50,7 @@ module.exports = {
         'NAME_REQUIRED_REPROMPT': `Please set your name in the Alexa companion app.`,
         'PHONE_REQUIRED': `It looks like you don't have your mobile number set. You can set your mobile number in the companion app.`,
         'PHONE_REQUIRED_REPROMPT': `Please set your phone number in the Alexa companion app.`,
-        'ERROR': 'Uh Oh. Looks like something went wrong.'
+        'ERROR': `Sorry, I didn't get that. Could you say that again?`,
+        'ERROR_REPROMPT': `Could you say that again?`,
     }
 }
