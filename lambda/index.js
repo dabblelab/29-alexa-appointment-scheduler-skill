@@ -169,14 +169,17 @@ const InProgressScheduleAppointmentIntentHandler = {
       && requestEnvelope.request.intent.slots.appointmentTime.value) {
 
       const { deviceId } = requestEnvelope.context.System.device;
-
+    
       const requestAttributes = handlerInput.attributesManager.getRequestAttributes(),
-        appointmentDate = `${Alexa.getSlotValue(handlerInput.requestEnvelope, "appointmentDate")}T${Alexa.getSlotValue(handlerInput.requestEnvelope, "appointmentTime")}`,
         upsServiceClient = serviceClientFactory.getUpsServiceClient(),
-        userTime = luxon.DateTime.fromISO(appointmentDate, { zone: await upsServiceClient.getSystemTimeZone(deviceId) }),
+        userTimezone = await upsServiceClient.getSystemTimeZone(deviceId),
+        appointmentDate = `${Alexa.getSlotValue(handlerInput.requestEnvelope, "appointmentDate")}T${Alexa.getSlotValue(handlerInput.requestEnvelope, "appointmentTime")}`,
+        userTime = luxon.DateTime.fromISO(appointmentDate, { zone: userTimezone }),
         speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM', userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE)),
         repromptOutput = requestAttributes.t('APPOINTMENT_CONFIRM_REPROMPT', userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE));
 
+        //make sure the meeting time is available
+        //checkAvailability(date, time, durration, userTime.zoneName)
       return handlerInput.responseBuilder
         .speak(speakOutput)
         .reprompt(repromptOutput)
@@ -281,6 +284,54 @@ const CompleteScheduleAppointmentIntentHandler = {
       .speak(speakOutput)
       .getResponse();
 
+  },
+};
+
+//check if a time is available
+const CheckAvailabilityIntentHandler = {
+  canHandle(handlerInput) {
+    return handlerInput.requestEnvelope.request.type === 'IntentRequest'
+      && handlerInput.requestEnvelope.request.intent.name === 'CheckAvailabilityIntent';
+  },
+  async handle(handlerInput) {
+     
+    const { requestEnvelope, serviceClientFactory, responseBuilder, attributesManager } = handlerInput;
+    
+    const requestAttributes = attributesManager.getRequestAttributes();
+    
+    let { deviceId } = requestEnvelope.context.System.device;
+
+    const upsServiceClient = serviceClientFactory.getUpsServiceClient();
+
+    const   slotDate = Alexa.getSlotValue(handlerInput.requestEnvelope, "appointmentDate"),
+            slotTime = Alexa.getSlotValue(handlerInput.requestEnvelope, "appointmentTime"),
+            userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
+            
+    const userTime = luxon.DateTime.fromISO(`${slotDate}T${slotTime}`, { zone: "utc" });
+    
+    
+    const startTime = userTime.toISO();
+    console.log(`startTime: ${startTime}`);
+    const endTime = userTime.plus({ minutes: 30 }).toISO();
+    console.log(`endTime: ${endTime}`);
+        
+    //const speakOutput = requestAttributes.t('SCHEDULE_BEGIN');
+
+    const timeAvailable = await checkAvailability("2020-06-19T09:00:00.000Z","2020-06-19T09:30:00.000Z", 'America/New_York');
+    
+    //const timeAvailable = await checkAvailability(startTime, endTime, userTimezone);
+    
+    const speakOutput = `The response was ${timeAvailable}`;
+    
+
+    return handlerInput.responseBuilder
+      .addDelegateDirective({
+        name: 'ScheduleAppointmentIntent',
+        confirmationStatus: 'NONE',
+        slots: {}
+      })
+      .speak(speakOutput)
+      .getResponse();
   },
 };
 
@@ -478,7 +529,7 @@ const LocalizationInterceptor = {
 
 /* FUNCTIONS */
 
-function checkAvailability(date, time, durration, timezone) {
+function checkAvailability(startTime, endTime, timezone) {
 
   /*
   * TODO: this function should check Google free/busy api to see if
@@ -500,7 +551,7 @@ function checkAvailability(date, time, durration, timezone) {
     if(REFRESH_TOKEN)
       tokens.refresh_token = REFRESH_TOKEN;
 
-    authClient.oauth2Client.credentials = tokens
+      oAuth2Client.credentials = tokens
 
     /** CREATE Calendar instance */
     const Calendar = google.calendar({
@@ -510,8 +561,8 @@ function checkAvailability(date, time, durration, timezone) {
 
     /** RequestBody
      * @items Array [{id : "<email-address>"}]
-     * @timeMax String 2020-06-17T11:30:00.000Z
-     * @timeMin String 2020-06-17T11:00:00.000Z
+     * @timeMax String 2020-06-17T15:30:00.000Z
+     * @timeMin String 2020-06-17T15:00:00.000Z
      * @timeZone String America/New_York
      */
 
@@ -521,22 +572,32 @@ function checkAvailability(date, time, durration, timezone) {
            id : constants.NOTIFY_EMAIL
          }
        ],
-       timeMax : "2020-06-17T11:30:00.000Z",
-       timeMin : "2020-06-17T11:00:00.000Z",
+       timeMin : startTime,
+       timeMax : endTime,
        timeZone : timezone
      };
 
-    Calendar.Calendar.freebusy.query({
+    Calendar.freebusy.query({
       requestBody : query
     }, (err, resp) => {
-
-      if(err)
+        
+      if(err) {
+      
         reject(err);
+      }
       else{
-        if(resp.data.calendars.busy && resp.data.calendars.busy.length)
-          resolve(false);
-        else 
+          
+        if(resp.data.calendars.busy && resp.data.calendars.busy.length > 0) {
+            console.log(`FALSE: ${JSON.stringify(err)}`);
+            resolve(false);
+        }
+          
+        else {
+            console.log(`TRUE: ${JSON.stringify(resp)}`);
           resolve(true);
+          
+        }
+
       }
     });
   });
@@ -596,8 +657,7 @@ function saveAppointmentS3(appointmentData) {
       busyStatus: 'BUSY',
       organizer: { name: constants.FROM_NAME, email: constants.FROM_EMAIL },
       attendees: [
-        { name: appointmentData.profileName, email: appointmentData.profileEmail, rsvp: true, partstat: 'ACCEPTED', role: 'REQ-PARTICIPANT' },
-        { name: 'Steve Tingiris', email: 'steve@dabblelabs.com', dir: 'https://linkedin.com/in/tingiris', role: 'OPT-PARTICIPANT' }
+        { name: appointmentData.profileName, email: appointmentData.profileEmail, rsvp: true, partstat: 'ACCEPTED', role: 'REQ-PARTICIPANT' }
       ]
     }
 
@@ -643,6 +703,7 @@ exports.handler = skillBuilder
     InvalidConfigHandler,
     InvalidPermissionsHandler,
     LaunchRequestHandler,
+    CheckAvailabilityIntentHandler,
     StartedScheduleAppointmentIntentHandler,
     InProgressScheduleAppointmentIntentHandler,
     CompleteScheduleAppointmentIntentHandler,
