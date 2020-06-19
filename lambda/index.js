@@ -283,24 +283,34 @@ const CompleteScheduleAppointmentIntentHandler = {
     const startTimeUtc = userTime.toUTC().toISO(),
       endTimeUtc = userTime.plus({ minutes: 30 }).toUTC().toISO();
 
-    //make sure the request time is available
+    const appointmentData = {
+      title: requestAttributes.t('APPOINTMENT_TITLE', profileName),
+      description: requestAttributes.t('APPOINTMENT_DESCRIPTION', profileName),
+      appointmentDateTime: `${slotDate}T${slotTime}`,
+      userTimezone: userTimezone,
+      appointmentDate: slotDate,
+      appointmentTime: slotTime,
+      profileName: profileName,
+      profileEmail: profileEmail,
+      profileMobileNumber: `+${mobileNumber.countryCode}${mobileNumber.phoneNumber}`
+    }
+
+    //schedule without freebusy check
+    if (!constants.CHECK_FREEBUSY) {
+      await bookAppointment(appointmentData);
+
+      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', speakUserTime);
+
+      return responseBuilder
+        .speak(speakOutput)
+        .getResponse();
+    }
+
+    //check if the request time is available
     const isTimeSlotAvailable = await checkAvailability(startTimeUtc, endTimeUtc, userTimezone);
 
+    //schedule with freebusy check
     if (isTimeSlotAvailable) {
-      //time requested is available so schedule the meeting
-      const appointmentData = {
-        title: requestAttributes.t('APPOINTMENT_TITLE', profileName),
-        description: requestAttributes.t('APPOINTMENT_DESCRIPTION', profileName),
-        appointmentDateTime: `${slotDate}T${slotTime}`,
-        userTimezone: userTimezone,
-        appointmentDate: slotDate,
-        appointmentTime: slotTime,
-        profileName: profileName,
-        profileEmail: profileEmail,
-        profileMobileNumber: `+${mobileNumber.countryCode}${mobileNumber.phoneNumber}`
-      }
-
-      //call bookAppointment()
       await bookAppointment(appointmentData);
 
       const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', speakUserTime);
