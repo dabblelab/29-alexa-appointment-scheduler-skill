@@ -12,18 +12,21 @@ module.exports = {
             `Can I schedule an appointment for you?`,
             `I can schedule an appointment for you. Would you like to get started?`, 
         ],
-        'SCHEDULE_BEGIN' : [
+        'SCHEDULE_YES' : [
             `Okay, let's schedule an appointment.`,
             `Okay, let's get started.`,
             `Alright, let's get you scheduled.`
         ],
-        'NO_RESPONSE' : [
+        'SCHEDULE_NO' : [
             `All right. Stop back whenever you'd like to schedule an appointment.`,
             `Okay, I'll be here whenever you want to schedule an appointment.`,
             `Alright, when you're ready to schedule an appointment, please stop back.`
         ],
-        'HELP_RESPONSE' : [
-            'This skill can help you schedule appointment. Would you like to schedule an appointment?'
+        'HELP' : [
+            'This skill can help you schedule an appointment. Would you like to schedule an appointment?'
+        ],
+        'HELP_REPROMPT' : [
+            'Would you like to schedule an appointment?'
         ],
         'CANCEL_STOP_RESPONSE' : [
             `Good bye`,
@@ -37,6 +40,18 @@ module.exports = {
         ],
         'APPOINTMENT_CONFIRM_COMPLETED' : [
             `Your appointment on %s has been scheduled.`
+        ],
+        'TIME_AVAILABLE' : [
+            `%s is available. Would you like to book it?`
+        ],
+        'TIME_AVAILABLE_REPROMPT' : [
+            `Would you like to book %s ?`
+        ],
+        'TIME_NOT_AVAILABLE' : [
+            `Sorry, %s is not available. Would you like to try another time?`
+        ],
+        'TIME_NOT_AVAILABLE_REPROMPT' : [
+            `Would you like to try another time?`
         ],
         'APPOINTMENT_TITLE' : `Appointment with %s`,
         'APPOINTMENT_DESCRIPTION' : `An appointment schedule by Alexa`,
