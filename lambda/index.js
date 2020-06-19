@@ -37,6 +37,7 @@ const { google } = require('googleapis');
 
 /* CONSTANTS */
 const constants = {
+  "CHECK_FREEBUSY": true,
   "FROM_NAME": "Dabble Lab",
   "FROM_EMAIL": "learn@dabblelab.com",
   "NOTIFY_EMAIL": "steve@dabblelab.com",
@@ -194,24 +195,33 @@ const InProgressScheduleAppointmentIntentHandler = {
 
     const { requestEnvelope, serviceClientFactory, responseBuilder, attributesManager } = handlerInput;
 
+    //get timezone
     const { deviceId } = requestEnvelope.context.System.device;
 
     const requestAttributes = attributesManager.getRequestAttributes(),
       upsServiceClient = serviceClientFactory.getUpsServiceClient();
+
+    //get slot values
+    const slotDate = Alexa.getSlotValue(requestEnvelope, "appointmentDate"),
+      slotTime = Alexa.getSlotValue(requestEnvelope, "appointmentTime");
+
+    //format appointment datetime
+    const appointmentDate = `${slotDate}T${slotTime}`;
+
+    //get timezone
+    const userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
+
+    //set time formats
+    let appointmentDateTime = luxon.DateTime.fromISO(appointmentDate, { zone: userTimezone }),
+      speakAppointmentDateTime = appointmentDateTime.toLocaleString(luxon.DateTime.DATETIME_HUGE);
 
     //custom intent confirmation for ScheduleAppointmentIntent 
     if (requestEnvelope.request.intent.confirmationStatus === "NONE"
       && requestEnvelope.request.intent.slots.appointmentDate.value
       && requestEnvelope.request.intent.slots.appointmentTime.value) {
 
-      const userTimezone = await upsServiceClient.getSystemTimeZone(deviceId),
-        slotDate = Alexa.getSlotValue(requestEnvelope, "appointmentDate"),
-        slotTime = Alexa.getSlotValue(requestEnvelope, "appointmentTime"),
-        appointmentDateTimeIso = `${slotDate}T${slotTime}`,
-        userDateTime = luxon.DateTime.fromISO(appointmentDateTimeIso, { zone: userTimezone });
-
-      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM', userDateTime.toLocaleString(luxon.DateTime.DATETIME_HUGE)),
-        repromptOutput = requestAttributes.t('APPOINTMENT_CONFIRM_REPROMPT', userDateTime.toLocaleString(luxon.DateTime.DATETIME_HUGE));
+      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM', speakAppointmentDateTime),
+        repromptOutput = requestAttributes.t('APPOINTMENT_CONFIRM_REPROMPT', speakAppointmentDateTime);
 
       return responseBuilder
         .speak(speakOutput)
@@ -777,4 +787,3 @@ exports.handler = skillBuilder
   .addErrorHandlers(ErrorHandler)
   .withApiClient(new Alexa.DefaultApiClient())
   .lambda();
-
