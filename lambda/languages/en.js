@@ -67,5 +67,6 @@ module.exports = {
         'PHONE_REQUIRED_REPROMPT': `Please set your phone number in the Alexa companion app.`,
         'ERROR': `Sorry, I didn't get that. Could you say that again?`,
         'ERROR_REPROMPT': `Could you say that again?`,
+        'FREEBUSY_DISABLED': `Sorry, freebusy checking is disabled. Would you like to schedule an appointment anyway?`
     }
 }

@@ -340,10 +340,21 @@ const CheckAvailabilityIntentHandler = {
       && handlerInput.requestEnvelope.request.intent.name === 'CheckAvailabilityIntent';
   },
   async handle(handlerInput) {
-
     const { requestEnvelope, serviceClientFactory, responseBuilder, attributesManager } = handlerInput;
 
     const requestAttributes = attributesManager.getRequestAttributes();
+
+    //freebusy check is disabled
+    if (!constants.CHECK_FREEBUSY) {
+
+      const speakOutput = requestAttributes.t('FREEBUSY_DISABLED'),
+            speakReprompt = requestAttributes.t('FREEBUSY_DISABLED');
+
+      return responseBuilder
+        .speak(speakOutput)
+        .reprompt(speakReprompt)
+        .getResponse();
+    }
 
     let { deviceId } = requestEnvelope.context.System.device;
 
