@@ -1,15 +1,6 @@
-/*
-  ABOUT:
-  This is an example skill that lets users schedule an appointment with the skill owner.
-  Users can choose a date and time to book an appointment that is then emailed to the skill owner.
-  The skill also supports checking a Google calendar for free/busy times.
-
-  SETUP:
-  See the included README.md file
-
-  RESOURCES:
-  For a video tutorial and support visit https://dabblelab.com/templates
-*/
+// This is an example skill that lets users schedule an appointment with the skill owner.
+// Users can choose a date and time to book an appointment that is then emailed to the skill owner.
+// The skill also supports checking a Google calendar for free/busy times.
 
 const Alexa = require('ask-sdk-core');
 const AWS = require('aws-sdk');
@@ -34,6 +25,9 @@ const constants = {
 const languageStrings = require('./languages/languageStrings');
 
 /* HANDLERS */
+
+// This handler responds when required environment variables
+// missing or a .env file has not been created.
 const InvalidConfigHandler = {
   canHandle(handlerInput) {
     const attributes = handlerInput.attributesManager.getRequestAttributes();
@@ -54,6 +48,8 @@ const InvalidConfigHandler = {
   },
 };
 
+// This is a handler that is used when the user has not enabled the
+// required permissions.
 const InvalidPermissionsHandler = {
   canHandle(handlerInput) {
     const attributes = handlerInput.attributesManager.getRequestAttributes();
@@ -87,11 +83,9 @@ const InvalidPermissionsHandler = {
           .withAskForPermissionsConsentCard(['alexa::profile:email:read'])
           .getResponse();
       default:
-        // do nothing
+        // throw an error if the permission is not defined
+        throw new Error(`${attributes.permissionsError} is not a known permission`);
     }
-
-    // should never get this far
-    throw new Error(`${attributes.permissionsError} is not a known permission`);
   },
 };
 
@@ -100,9 +94,7 @@ const LaunchRequestHandler = {
     return handlerInput.requestEnvelope.request.type === 'LaunchRequest';
   },
   handle(handlerInput) {
-    const { attributesManager } = handlerInput;
-
-    const requestAttributes = attributesManager.getRequestAttributes();
+    const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
 
     const speakOutput = requestAttributes.t('GREETING', requestAttributes.t('SKILL_NAME'));
     const repromptOutput = requestAttributes.t('GREETING_REPROMPT');
@@ -122,14 +114,12 @@ const StartedScheduleAppointmentIntentHandler = {
       && request.dialogState === 'STARTED';
   },
   handle(handlerInput) {
-    const { requestEnvelope, attributesManager } = handlerInput;
-
-    const currentIntent = requestEnvelope.request.intent;
+    const currentIntent = handlerInput.requestEnvelope.request.intent;
 
     const { appointmentDate } = currentIntent.slots;
     const { appointmentTime } = currentIntent.slots;
 
-    const sessionAttributes = attributesManager.getSessionAttributes();
+    const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
 
     // appointmentDate.value is empty if the user has not filled the slot.
     if (!appointmentDate.value && sessionAttributes.appointmentDate) {
@@ -205,6 +195,8 @@ const InProgressScheduleAppointmentIntentHandler = {
   },
 };
 
+// Handles the completion of an appointment. This handler is used when
+// dialog in ScheduleAppointmentIntent is completed.
 const CompleteScheduleAppointmentIntentHandler = {
   canHandle(handlerInput) {
     return handlerInput.requestEnvelope.request.type === 'IntentRequest'
@@ -302,7 +294,8 @@ const CompleteScheduleAppointmentIntentHandler = {
   },
 };
 
-// check if a time is available
+// This handler is used to handle cases when a user asks if an
+// appointment time is available
 const CheckAvailabilityIntentHandler = {
   canHandle(handlerInput) {
     return handlerInput.requestEnvelope.request.type === 'IntentRequest'
@@ -316,9 +309,14 @@ const CheckAvailabilityIntentHandler = {
       attributesManager,
     } = handlerInput;
 
+    // get request attributes
     const requestAttributes = attributesManager.getRequestAttributes();
 
-    // freebusy check is disabled
+    // get slot values
+    const slotDate = Alexa.getSlotValue(requestEnvelope, 'appointmentDate');
+    const slotTime = Alexa.getSlotValue(requestEnvelope, 'appointmentTime');
+
+    // let user know freebusy is not available if freebusy check is disabled
     if (!constants.CHECK_FREEBUSY) {
       const speakOutput = requestAttributes.t('FREEBUSY_DISABLED');
       const speakReprompt = requestAttributes.t('FREEBUSY_DISABLED');
@@ -329,20 +327,18 @@ const CheckAvailabilityIntentHandler = {
         .getResponse();
     }
 
-    const { deviceId } = requestEnvelope.context.System.device;
-
+    // get the timezone for the device
     const upsServiceClient = serviceClientFactory.getUpsServiceClient();
-
-    const slotDate = Alexa.getSlotValue(requestEnvelope, 'appointmentDate');
-    const slotTime = Alexa.getSlotValue(requestEnvelope, 'appointmentTime');
+    const { deviceId } = requestEnvelope.context.System.device;
     const userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
 
+    // format the requested appointment date and time
     const userTime = luxon.DateTime.fromISO(`${slotDate}T${slotTime}`, { zone: userTimezone });
-    const speakUserTime = userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE);
-
     const startTimeUtc = userTime.toUTC().toISO();
     const endTimeUtc = userTime.plus({ minutes: 30 }).toUTC().toISO();
+    const speakUserTime = userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE);
 
+    // check to see if the appointment date and time is available
     const isTimeSlotAvailable = await checkAvailability(startTimeUtc, endTimeUtc, userTimezone);
 
     let speakOutput = requestAttributes.t('TIME_NOT_AVAILABLE', speakUserTime);
@@ -373,20 +369,18 @@ const CheckAvailabilityIntentHandler = {
   },
 };
 
-// handle yes resonse
+// This handler is used to handle 'yes' utternaces
 const YesIntentHandler = {
   canHandle(handlerInput) {
     return handlerInput.requestEnvelope.request.type === 'IntentRequest'
       && handlerInput.requestEnvelope.request.intent.name === 'AMAZON.YesIntent';
   },
   handle(handlerInput) {
-    const { responseBuilder, attributesManager } = handlerInput;
-
-    const requestAttributes = attributesManager.getRequestAttributes();
+    const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
 
     const speakOutput = requestAttributes.t('SCHEDULE_YES');
 
-    return responseBuilder
+    return handlerInput.responseBuilder
       .addDelegateDirective({
         name: 'ScheduleAppointmentIntent',
         confirmationStatus: 'NONE',
@@ -397,18 +391,17 @@ const YesIntentHandler = {
   },
 };
 
-// handle no resonse
+// This handler is used to handle 'no' utternaces
 const NoIntentHandler = {
   canHandle(handlerInput) {
     return handlerInput.requestEnvelope.request.type === 'IntentRequest'
       && handlerInput.requestEnvelope.request.intent.name === 'AMAZON.NoIntent';
   },
   handle(handlerInput) {
-    const { responseBuilder, attributesManager } = handlerInput;
-    const requestAttributes = attributesManager.getRequestAttributes();
+    const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
     const speakOutput = requestAttributes.t('SCHEDULE_NO');
 
-    return responseBuilder
+    return handlerInput.responseBuilder
       .speak(speakOutput)
       .getResponse();
   },
@@ -420,14 +413,12 @@ const HelpIntentHandler = {
       && handlerInput.requestEnvelope.request.intent.name === 'AMAZON.HelpIntent';
   },
   handle(handlerInput) {
-    const { attributesManager, responseBuilder } = handlerInput;
-
-    const requestAttributes = attributesManager.getRequestAttributes();
+    const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
 
     const speakOutput = requestAttributes.t('HELP');
     const repromptOutput = requestAttributes.t('HELP_REPROMPT');
 
-    return responseBuilder
+    return handlerInput.responseBuilder
       .speak(speakOutput)
       .reprompt(repromptOutput)
       .getResponse();
@@ -441,13 +432,11 @@ const CancelAndStopIntentHandler = {
         || handlerInput.requestEnvelope.request.intent.name === 'AMAZON.StopIntent');
   },
   handle(handlerInput) {
-    const { attributesManager, responseBuilder } = handlerInput;
-
-    const requestAttributes = attributesManager.getRequestAttributes();
+    const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
 
     const speakOutput = requestAttributes.t('CANCEL_STOP_RESPONSE');
 
-    return responseBuilder
+    return handlerInput.responseBuilder
       .speak(speakOutput)
       .getResponse();
   },
@@ -464,13 +453,16 @@ const SessionEndedRequestHandler = {
   },
 };
 
+// This function handles syntax or routing errors. If you receive an error
+// stating the request handler chain is not found, you have not implemented
+// a handler for the intent or included it in the skill builder below
 const ErrorHandler = {
   canHandle() {
     return true;
   },
   handle(handlerInput, error) {
-    // console.log(`Error Request: ${JSON.stringify(handlerInput.requestEnvelope.request)}`);
-    // console.log(`Error handled: ${error.message}`);
+    console.log(`Error Request: ${JSON.stringify(handlerInput.requestEnvelope.request)}`);
+    console.log(`Error handled: ${error.message}`);
 
     const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
     const speakOutput = requestAttributes.t('ERROR');
@@ -483,7 +475,30 @@ const ErrorHandler = {
   },
 };
 
+// This function is used for testing and debugging. It will echo back an
+// intent name for an intent that does not have a suitable intent handler.
+// a respond from this function indicates an intent handler function should
+// be created or modified to handle the user's intent.
+const IntentReflectorHandler = {
+  canHandle(handlerInput) {
+    return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest';
+  },
+  handle(handlerInput) {
+    const intentName = Alexa.getIntentName(handlerInput.requestEnvelope);
+    const speakOutput = `You just triggered ${intentName}`;
+
+    return handlerInput.responseBuilder
+      .speak(speakOutput)
+    // .reprompt('add a reprompt if you want to keep the session open for the user to respond')
+      .getResponse();
+  },
+};
+
 /* INTERCEPTORS */
+
+// This function checks to make sure required environment vairables
+// exists. This function will only be called if required configuration
+// is not found so it's only a utilty function.
 const EnvironmentCheckInterceptor = {
   process(handlerInput) {
     // load environment variable from .env
@@ -501,6 +516,9 @@ const EnvironmentCheckInterceptor = {
   },
 };
 
+// This interceptor function checks to see if a user has enabled permissions
+// to access their profile information. If not, a request attribute is set and
+// and handled by the InvalidPermissionsHandler
 const PermissionsCheckInterceptor = {
   async process(handlerInput) {
     const { serviceClientFactory, attributesManager } = handlerInput;
@@ -535,6 +553,10 @@ const PermissionsCheckInterceptor = {
   },
 };
 
+// This interceptor function is used for localization.
+// It uses the i18n module, along with defined language
+// string to return localized content. It defaults to 'en'
+// if it can't find a matching language.
 const LocalizationInterceptor = {
   process(handlerInput) {
     const { requestEnvelope, attributesManager } = handlerInput;
@@ -571,6 +593,8 @@ const LocalizationInterceptor = {
 
 /* FUNCTIONS */
 
+// A function that usess the Google Calander API and the freebusy service
+// to check if a given appointment time slot is available
 function checkAvailability(startTime, endTime, timezone) {
   const {
     CLIENT_ID,
@@ -584,7 +608,7 @@ function checkAvailability(startTime, endTime, timezone) {
   } = process.env;
 
   return new Promise(((resolve, reject) => {
-    /** SET UP Auth */
+    // Setup oAuth2 client
     const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URIS);
     const tokens = {
       access_token: ACCESS_TOKEN,
@@ -597,7 +621,7 @@ function checkAvailability(startTime, endTime, timezone) {
 
     oAuth2Client.credentials = tokens;
 
-    /** CREATE Calendar instance */
+    // Create a Calendar instance
     const Calendar = google.calendar({
       version: 'v3',
       auth: oAuth2Client,
@@ -610,6 +634,7 @@ function checkAvailability(startTime, endTime, timezone) {
      * @timeZone String America/New_York
      */
 
+    // Setup request body
     const query = {
       items: [
         {
@@ -628,16 +653,16 @@ function checkAvailability(startTime, endTime, timezone) {
         reject(err);
       } else if (resp.data.calendars[constants.NOTIFY_EMAIL].busy
         && resp.data.calendars[constants.NOTIFY_EMAIL].busy.length > 0) {
-        // console.log(`FALSE: ${JSON.stringify(err)}`);
         resolve(false);
       } else {
-        // console.log(`TRUE: ${JSON.stringify(resp)}`);
         resolve(true);
       }
     });
   }));
 }
 
+// A helper function that formats and returns the
+// text content for the email notification
 function getEmailBodyText(appointmentData) {
   const textBody = 'Meeting Details:\n'
   + 'Timezone: {{userTimezone}}\n'
@@ -652,6 +677,8 @@ function getEmailBodyText(appointmentData) {
   return textBodyTemplate(appointmentData);
 }
 
+// A helper function that formats and returns the
+// html content for the email notification
 function getEmailBodyHtml(appointmentData) {
   const htmlBody = '<strong>Meeting Details:</strong><br/>'
   + 'Timezone: {{userTimezone}}<br/>'
@@ -666,6 +693,8 @@ function getEmailBodyHtml(appointmentData) {
   return htmlBodyTemplate(appointmentData);
 }
 
+// This function processes a booking request by creating a .ics file,
+// saving the .isc file to S3 and sending it via email to the skill ower.
 function bookAppointment(appointmentData) {
   return new Promise(((resolve, reject) => {
     try {
@@ -710,12 +739,13 @@ function bookAppointment(appointmentData) {
       const s3Params = {
         Body: icsData.value,
         Bucket: process.env.S3_PERSISTENCE_BUCKET,
-        Key: `appointments/${appointmentData.appointmentDate}/${event.title.replace(/ /g, '-').toLowerCase()}-${luxon.DateTime.utc().toMillis()}.ics`,
+        Key: `appointments/${appointmentData.appointmentDate}/${event.title.replace(/ /g, '-')
+          .toLowerCase()}-${luxon.DateTime.utc().toMillis()}.ics`,
       };
 
-      const s3Result = s3.putObject(s3Params, (error, data) => {
+      s3.putObject(s3Params, () => {
         // send email to user
-        const attachment = new Buffer(icsData.value);
+        const attachment = Buffer.from(icsData.value);
 
         const msg = {
           to: constants.NOTIFY_EMAIL,
@@ -747,9 +777,11 @@ function bookAppointment(appointmentData) {
 }
 
 /* LAMBDA SETUP */
-const skillBuilder = Alexa.SkillBuilders.custom();
 
-exports.handler = skillBuilder
+// The SkillBuilder acts as the entry point for your skill, routing all request and response
+// payloads to the handlers above. Make sure any new handlers or interceptors you've
+// defined are included below. The order matters - they're processed top to bottom.
+exports.handler = Alexa.SkillBuilders.custom()
   .addRequestHandlers(
     InvalidConfigHandler,
     InvalidPermissionsHandler,
@@ -763,6 +795,7 @@ exports.handler = skillBuilder
     HelpIntentHandler,
     CancelAndStopIntentHandler,
     SessionEndedRequestHandler,
+    IntentReflectorHandler,
   )
   .addRequestInterceptors(
     EnvironmentCheckInterceptor,
