@@ -1,0 +1,3 @@
+Copyright (c) 2020 Dabble Lab - http://dabblelab.com 
+
+I confirm that you can use, modify, copy, and redistribute this code under the terms of your choice.
