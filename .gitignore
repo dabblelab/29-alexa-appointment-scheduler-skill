@@ -1,4 +1,5 @@
 lambda/node_modules
+.DS_Store
 .ask/
 ask-resources.json
 package-lock.json
