@@ -1,20 +1,4 @@
 /*
-  ISC License (ISC)
-  Copyright (c) 2020 Dabble Lab - http://dabblelab.com
-
-  Permission to use, copy, modify, and/or distribute this software for any purpose with or
-  without fee is hereby granted, provided that the above copyright notice and this permission
-  notice appear in all copies.
-
-  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
-  SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
-  THE AUTHOR BE LIABLE FOR ANY SPECIAL,DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
-  NEGLIGENCE OR OTHERTORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-  OF THIS SOFTWARE.
-*/
-
-/*
   ABOUT:
   This is an example skill that lets users schedule an appointment with the skill owner.
   Users can choose a date and time to book an appointment that is then emailed to the skill owner.
@@ -40,36 +24,14 @@ const sgMail = require('@sendgrid/mail');
 
 /* CONSTANTS */
 const constants = {
-  CHECK_FREEBUSY: true,
+  CHECK_FREEBUSY: true, // set this to false to disable freebusy check
   FROM_NAME: 'Dabble Lab',
   FROM_EMAIL: 'learn@dabblelab.com',
   NOTIFY_EMAIL: 'steve@dabblelab.com',
 };
 
 /* LANGUAGE STRINGS */
-const languageStrings = {
-  //  'de': require('./languages/de.js'),
-  //  'de-DE': require('./languages/de-DE.js'),
-  en: require('./languages/en.js'),
-  //  'en-AU': require('./languages/en-AU.js'),
-  //  'en-CA': require('./languages/en-CA.js'),
-  //  'en-GB': require('./languages/en-GB.js'),
-  //  'en-IN': require('./languages/en-IN.js'),
-  'en-US': require('./languages/en-US.js'),
-  //  'es' : require('./languages/es.js'),
-  //  'es-ES': require('./languages/es-ES.js'),
-  //  'es-MX': require('./languages/es-MX.js'),
-  //  'es-US': require('./languages/es-US.js'),
-  //  'fr' : require('./languages/fr.js'),
-  //  'fr-CA': require('./languages/fr-CA.js'),
-  //  'fr-FR': require('./languages/fr-FR.js'),
-  //  'it' : require('./languages/it.js'),
-  //  'it-IT': require('./languages/it-IT.js'),
-  //  'ja' : require('./languages/ja.js'),
-  //  'ja-JP': require('./languages/ja-JP.js'),
-  //  'pt' : require('./languages/pt.js'),
-  //  'pt-BR': require('./languages/pt-BR.js'),
-};
+const languageStrings = require('./languages/languageStrings');
 
 /* HANDLERS */
 const InvalidConfigHandler = {
@@ -525,7 +487,7 @@ const ErrorHandler = {
 const EnvironmentCheckInterceptor = {
   process(handlerInput) {
     // load environment variable from .env
-    const result = dotenv.config();
+    dotenv.config();
 
     // check for process.env.S3_PERSISTENCE_BUCKET
     if (!process.env.S3_PERSISTENCE_BUCKET) {
