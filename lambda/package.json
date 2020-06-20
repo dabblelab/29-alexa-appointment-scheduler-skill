@@ -10,16 +10,21 @@
   "author": "Dabble Lab",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^7.2.0",
     "ask-sdk-core": "^2.6.0",
     "ask-sdk-model": "^1.18.0",
     "aws-sdk": "^2.326.0",
     "dotenv": "^8.2.0",
-    "@sendgrid/mail": "^7.1.1",
-    "i18next" : "^19.4.5",
-    "i18next-sprintf-postprocessor" : "^0.2.2",
-    "ics" : "^2.22.1",
+    "googleapis": "^52.1.0",
     "handlebars": "^4.0.11",
-    "luxon" : "^1.24.1",
-    "googleapis": "^52.1.0"
+    "i18next": "^19.4.5",
+    "i18next-sprintf-postprocessor": "^0.2.2",
+    "ics": "^2.22.1",
+    "luxon": "^1.24.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.3.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.21.2"
   }
 }

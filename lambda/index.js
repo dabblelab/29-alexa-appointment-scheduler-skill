@@ -2,20 +2,22 @@
   ISC License (ISC)
   Copyright (c) 2020 Dabble Lab - http://dabblelab.com
 
-  Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby 
-  granted, provided that the above copyright notice and this permission notice appear in all copies.
+  Permission to use, copy, modify, and/or distribute this software for any purpose with or
+  without fee is hereby granted, provided that the above copyright notice and this permission
+  notice appear in all copies.
 
-  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING 
-  ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, 
-  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, 
-  WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
-  WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+  SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
+  THE AUTHOR BE LIABLE FOR ANY SPECIAL,DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+  NEGLIGENCE OR OTHERTORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+  OF THIS SOFTWARE.
 */
 
 /*
-  ABOUT: 
-  This is an example skill that lets users schedule an appointment with the skill owner. 
-  Users can choose a date and time to book an appointment that is then emailed to the skill owner. 
+  ABOUT:
+  This is an example skill that lets users schedule an appointment with the skill owner.
+  Users can choose a date and time to book an appointment that is then emailed to the skill owner.
   The skill also supports checking a Google calendar for free/busy times.
 
   SETUP:
@@ -34,20 +36,21 @@ const handlebars = require('handlebars');
 const luxon = require('luxon');
 const ics = require('ics');
 const { google } = require('googleapis');
+const sgMail = require('@sendgrid/mail');
 
 /* CONSTANTS */
 const constants = {
-  "CHECK_FREEBUSY": true,
-  "FROM_NAME": "Dabble Lab",
-  "FROM_EMAIL": "learn@dabblelab.com",
-  "NOTIFY_EMAIL": "steve@dabblelab.com",
+  CHECK_FREEBUSY: true,
+  FROM_NAME: 'Dabble Lab',
+  FROM_EMAIL: 'learn@dabblelab.com',
+  NOTIFY_EMAIL: 'steve@dabblelab.com',
 };
 
 /* LANGUAGE STRINGS */
 const languageStrings = {
   //  'de': require('./languages/de.js'),
   //  'de-DE': require('./languages/de-DE.js'),
-  'en': require('./languages/en.js'),
+  en: require('./languages/en.js'),
   //  'en-AU': require('./languages/en-AU.js'),
   //  'en-CA': require('./languages/en-CA.js'),
   //  'en-GB': require('./languages/en-GB.js'),
@@ -71,7 +74,6 @@ const languageStrings = {
 /* HANDLERS */
 const InvalidConfigHandler = {
   canHandle(handlerInput) {
-
     const attributes = handlerInput.attributesManager.getRequestAttributes();
 
     const invalidConfig = attributes.invalidConfig || false;
@@ -102,31 +104,32 @@ const InvalidPermissionsHandler = {
     const attributes = attributesManager.getRequestAttributes();
 
     switch (attributes.permissionsError) {
-      case "no_name":
+      case 'no_name':
         return responseBuilder
           .speak(attributes.t('NAME_REQUIRED'))
           .withSimpleCard(attributes.t('SKILL_NAME'), attributes.t('NAME_REQUIRED_REPROMPT'))
           .getResponse();
-      case "no_email":
+      case 'no_email':
         return responseBuilder
           .speak(attributes.t('EMAIL_REQUIRED'))
           .withSimpleCard(attributes.t('SKILL_NAME'), attributes.t('EMAIL_REQUIRED_REPROMPT'))
           .getResponse();
-      case "no_phone":
+      case 'no_phone':
         return responseBuilder
           .speak(attributes.t('PHONE_REQUIRED'))
           .withSimpleCard(attributes.t('SKILL_NAME'), attributes.t('PHONE_REQUIRED_REPROMPT'))
           .getResponse();
-      case "permissions_required":
+      case 'permissions_required':
         return responseBuilder
           .speak(attributes.t('PERMISSIONS_REQUIRED'))
-          .withAskForPermissionsConsentCard(["alexa::profile:email:read"])
+          .withAskForPermissionsConsentCard(['alexa::profile:email:read'])
           .getResponse();
+      default:
+        // do nothing
     }
 
-    //should never get this far
+    // should never get this far
     throw new Error(`${attributes.permissionsError} is not a known permission`);
-
   },
 };
 
@@ -135,7 +138,6 @@ const LaunchRequestHandler = {
     return handlerInput.requestEnvelope.request.type === 'LaunchRequest';
   },
   handle(handlerInput) {
-
     const { attributesManager } = handlerInput;
 
     const requestAttributes = attributesManager.getRequestAttributes();
@@ -152,19 +154,18 @@ const LaunchRequestHandler = {
 
 const StartedScheduleAppointmentIntentHandler = {
   canHandle(handlerInput) {
-    const request = handlerInput.requestEnvelope.request;
+    const { request } = handlerInput.requestEnvelope;
     return request.type === 'IntentRequest'
       && request.intent.name === 'ScheduleAppointmentIntent'
       && request.dialogState === 'STARTED';
   },
   handle(handlerInput) {
-
     const { requestEnvelope, attributesManager } = handlerInput;
 
     const currentIntent = requestEnvelope.request.intent;
 
-    let appointmentDate = currentIntent.slots.appointmentDate,
-      appointmentTime = currentIntent.slots.appointmentTime;
+    const { appointmentDate } = currentIntent.slots;
+    const { appointmentTime } = currentIntent.slots;
 
     const sessionAttributes = attributesManager.getSessionAttributes();
 
@@ -181,47 +182,51 @@ const StartedScheduleAppointmentIntentHandler = {
     return handlerInput.responseBuilder
       .addDelegateDirective(currentIntent)
       .getResponse();
-  }
+  },
 };
 
 const InProgressScheduleAppointmentIntentHandler = {
   canHandle(handlerInput) {
-    const request = handlerInput.requestEnvelope.request;
+    const { request } = handlerInput.requestEnvelope;
     return request.type === 'IntentRequest'
       && request.intent.name === 'ScheduleAppointmentIntent'
       && request.dialogState === 'IN_PROGRESS';
   },
   async handle(handlerInput) {
+    const {
+      requestEnvelope,
+      serviceClientFactory,
+      responseBuilder,
+      attributesManager,
+    } = handlerInput;
 
-    const { requestEnvelope, serviceClientFactory, responseBuilder, attributesManager } = handlerInput;
-
-    //get timezone
+    // get timezone
     const { deviceId } = requestEnvelope.context.System.device;
 
-    const requestAttributes = attributesManager.getRequestAttributes(),
-      upsServiceClient = serviceClientFactory.getUpsServiceClient();
+    const requestAttributes = attributesManager.getRequestAttributes();
+    const upsServiceClient = serviceClientFactory.getUpsServiceClient();
 
-    //get slot values
-    const slotDate = Alexa.getSlotValue(requestEnvelope, "appointmentDate"),
-      slotTime = Alexa.getSlotValue(requestEnvelope, "appointmentTime");
+    // get slot values
+    const slotDate = Alexa.getSlotValue(requestEnvelope, 'appointmentDate');
+    const slotTime = Alexa.getSlotValue(requestEnvelope, 'appointmentTime');
 
-    //format appointment datetime
+    // format appointment datetime
     const appointmentDate = `${slotDate}T${slotTime}`;
 
-    //get timezone
+    // get timezone
     const userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
 
-    //set time formats
-    let appointmentDateTime = luxon.DateTime.fromISO(appointmentDate, { zone: userTimezone }),
-      speakAppointmentDateTime = appointmentDateTime.toLocaleString(luxon.DateTime.DATETIME_HUGE);
+    // set time formats
+    const appointmentDateTime = luxon.DateTime.fromISO(appointmentDate, { zone: userTimezone });
+    const speakAppointmentDateTime = appointmentDateTime
+      .toLocaleString(luxon.DateTime.DATETIME_HUGE);
 
-    //custom intent confirmation for ScheduleAppointmentIntent 
-    if (requestEnvelope.request.intent.confirmationStatus === "NONE"
+    // custom intent confirmation for ScheduleAppointmentIntent
+    if (requestEnvelope.request.intent.confirmationStatus === 'NONE'
       && requestEnvelope.request.intent.slots.appointmentDate.value
       && requestEnvelope.request.intent.slots.appointmentTime.value) {
-
-      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM', speakAppointmentDateTime),
-        repromptOutput = requestAttributes.t('APPOINTMENT_CONFIRM_REPROMPT', speakAppointmentDateTime);
+      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM', speakAppointmentDateTime);
+      const repromptOutput = requestAttributes.t('APPOINTMENT_CONFIRM_REPROMPT', speakAppointmentDateTime);
 
       return responseBuilder
         .speak(speakOutput)
@@ -245,13 +250,17 @@ const CompleteScheduleAppointmentIntentHandler = {
       && handlerInput.requestEnvelope.request.dialogState === 'COMPLETED';
   },
   async handle(handlerInput) {
-
-    const { requestEnvelope, serviceClientFactory, responseBuilder, attributesManager } = handlerInput;
+    const {
+      requestEnvelope,
+      serviceClientFactory,
+      responseBuilder,
+      attributesManager,
+    } = handlerInput;
 
     const requestAttributes = attributesManager.getRequestAttributes();
 
-    //deal with intent confirmation denied
-    if (requestEnvelope.request.intent.confirmationStatus === "DENIED") {
+    // deal with intent confirmation denied
+    if (requestEnvelope.request.intent.confirmationStatus === 'DENIED') {
       const speakOutput = requestAttributes.t('NO_CONFIRM');
       const repromptOutput = requestAttributes.t('NO_CONFIRM_REPROMPT');
 
@@ -261,41 +270,41 @@ const CompleteScheduleAppointmentIntentHandler = {
         .getResponse();
     }
 
-    //get user profile details and timezone setting
+    // get user profile details and timezone setting
     const upsServiceClient = serviceClientFactory.getUpsServiceClient();
     const { deviceId } = requestEnvelope.context.System.device;
 
-    const mobileNumber = await upsServiceClient.getProfileMobileNumber(),
-      profileName = await upsServiceClient.getProfileName(),
-      profileEmail = await upsServiceClient.getProfileEmail(),
-      userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
+    const mobileNumber = await upsServiceClient.getProfileMobileNumber();
+    const profileName = await upsServiceClient.getProfileName();
+    const profileEmail = await upsServiceClient.getProfileEmail();
+    const userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
 
-    //get slot values
-    const slotDate = Alexa.getSlotValue(requestEnvelope, "appointmentDate"),
-      slotTime = Alexa.getSlotValue(requestEnvelope, "appointmentTime");
+    // get slot values
+    const slotDate = Alexa.getSlotValue(requestEnvelope, 'appointmentDate');
+    const slotTime = Alexa.getSlotValue(requestEnvelope, 'appointmentTime');
 
-    //format appointment datetime
+    // format appointment datetime
     const appointmentDate = `${slotDate}T${slotTime}`;
 
-    let userTime = luxon.DateTime.fromISO(appointmentDate, { zone: userTimezone }),
-      speakUserTime = userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE);
+    const userTime = luxon.DateTime.fromISO(appointmentDate, { zone: userTimezone });
+    const speakUserTime = userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE);
 
-    const startTimeUtc = userTime.toUTC().toISO(),
-      endTimeUtc = userTime.plus({ minutes: 30 }).toUTC().toISO();
+    const startTimeUtc = userTime.toUTC().toISO();
+    const endTimeUtc = userTime.plus({ minutes: 30 }).toUTC().toISO();
 
     const appointmentData = {
       title: requestAttributes.t('APPOINTMENT_TITLE', profileName),
       description: requestAttributes.t('APPOINTMENT_DESCRIPTION', profileName),
       appointmentDateTime: `${slotDate}T${slotTime}`,
-      userTimezone: userTimezone,
+      userTimezone,
       appointmentDate: slotDate,
       appointmentTime: slotTime,
-      profileName: profileName,
-      profileEmail: profileEmail,
-      profileMobileNumber: `+${mobileNumber.countryCode}${mobileNumber.phoneNumber}`
-    }
+      profileName,
+      profileEmail,
+      profileMobileNumber: `+${mobileNumber.countryCode}${mobileNumber.phoneNumber}`,
+    };
 
-    //schedule without freebusy check
+    // schedule without freebusy check
     if (!constants.CHECK_FREEBUSY) {
       await bookAppointment(appointmentData);
 
@@ -306,10 +315,10 @@ const CompleteScheduleAppointmentIntentHandler = {
         .getResponse();
     }
 
-    //check if the request time is available
+    // check if the request time is available
     const isTimeSlotAvailable = await checkAvailability(startTimeUtc, endTimeUtc, userTimezone);
 
-    //schedule with freebusy check
+    // schedule with freebusy check
     if (isTimeSlotAvailable) {
       await bookAppointment(appointmentData);
 
@@ -318,37 +327,39 @@ const CompleteScheduleAppointmentIntentHandler = {
       return responseBuilder
         .speak(speakOutput)
         .getResponse();
-
-    } else {
-      //time requested is not available so promot to pick another time
-      const speakOutput = requestAttributes.t('TIME_NOT_AVAILABLE', speakUserTime);
-      const speakReprompt = requestAttributes.t('TIME_NOT_AVAILABLE_REPROMPT', speakUserTime);
-
-      return responseBuilder
-        .speak(speakOutput)
-        .reprompt(speakReprompt)
-        .getResponse();
     }
 
+    // time requested is not available so promot to pick another time
+    const speakOutput = requestAttributes.t('TIME_NOT_AVAILABLE', speakUserTime);
+    const speakReprompt = requestAttributes.t('TIME_NOT_AVAILABLE_REPROMPT', speakUserTime);
+
+    return responseBuilder
+      .speak(speakOutput)
+      .reprompt(speakReprompt)
+      .getResponse();
   },
 };
 
-//check if a time is available
+// check if a time is available
 const CheckAvailabilityIntentHandler = {
   canHandle(handlerInput) {
     return handlerInput.requestEnvelope.request.type === 'IntentRequest'
       && handlerInput.requestEnvelope.request.intent.name === 'CheckAvailabilityIntent';
   },
   async handle(handlerInput) {
-    const { requestEnvelope, serviceClientFactory, responseBuilder, attributesManager } = handlerInput;
+    const {
+      requestEnvelope,
+      serviceClientFactory,
+      responseBuilder,
+      attributesManager,
+    } = handlerInput;
 
     const requestAttributes = attributesManager.getRequestAttributes();
 
-    //freebusy check is disabled
+    // freebusy check is disabled
     if (!constants.CHECK_FREEBUSY) {
-
-      const speakOutput = requestAttributes.t('FREEBUSY_DISABLED'),
-            speakReprompt = requestAttributes.t('FREEBUSY_DISABLED');
+      const speakOutput = requestAttributes.t('FREEBUSY_DISABLED');
+      const speakReprompt = requestAttributes.t('FREEBUSY_DISABLED');
 
       return responseBuilder
         .speak(speakOutput)
@@ -356,37 +367,36 @@ const CheckAvailabilityIntentHandler = {
         .getResponse();
     }
 
-    let { deviceId } = requestEnvelope.context.System.device;
+    const { deviceId } = requestEnvelope.context.System.device;
 
     const upsServiceClient = serviceClientFactory.getUpsServiceClient();
 
-    const slotDate = Alexa.getSlotValue(requestEnvelope, "appointmentDate"),
-      slotTime = Alexa.getSlotValue(requestEnvelope, "appointmentTime"),
-      userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
+    const slotDate = Alexa.getSlotValue(requestEnvelope, 'appointmentDate');
+    const slotTime = Alexa.getSlotValue(requestEnvelope, 'appointmentTime');
+    const userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
 
-    const userTime = luxon.DateTime.fromISO(`${slotDate}T${slotTime}`, { zone: userTimezone }),
-      speakUserTime = userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE);
+    const userTime = luxon.DateTime.fromISO(`${slotDate}T${slotTime}`, { zone: userTimezone });
+    const speakUserTime = userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE);
 
-    const startTimeUtc = userTime.toUTC().toISO(),
-      endTimeUtc = userTime.plus({ minutes: 30 }).toUTC().toISO();
+    const startTimeUtc = userTime.toUTC().toISO();
+    const endTimeUtc = userTime.plus({ minutes: 30 }).toUTC().toISO();
 
     const isTimeSlotAvailable = await checkAvailability(startTimeUtc, endTimeUtc, userTimezone);
 
-    let speakOutput = requestAttributes.t('TIME_NOT_AVAILABLE', speakUserTime),
-      speekReprompt = requestAttributes.t('TIME_NOT_AVAILABLE_REPROMPT', speakUserTime);
+    let speakOutput = requestAttributes.t('TIME_NOT_AVAILABLE', speakUserTime);
+    let speekReprompt = requestAttributes.t('TIME_NOT_AVAILABLE_REPROMPT', speakUserTime);
 
     if (isTimeSlotAvailable) {
-
-      //save booking time to session to be used for booking 
+      // save booking time to session to be used for booking
       const sessionAttributes = {
         appointmentDate: slotDate,
-        appointmentTime: slotTime
-      }
+        appointmentTime: slotTime,
+      };
 
       attributesManager.setSessionAttributes(sessionAttributes);
 
-      speakOutput = requestAttributes.t('TIME_AVAILABLE', speakUserTime),
-        speekReprompt = requestAttributes.t('TIME_AVAILABLE_REPROMPT', speakUserTime);
+      speakOutput = requestAttributes.t('TIME_AVAILABLE', speakUserTime);
+      speekReprompt = requestAttributes.t('TIME_AVAILABLE_REPROMPT', speakUserTime);
 
       return responseBuilder
         .speak(speakOutput)
@@ -401,7 +411,7 @@ const CheckAvailabilityIntentHandler = {
   },
 };
 
-//handle yes resonse
+// handle yes resonse
 const YesIntentHandler = {
   canHandle(handlerInput) {
     return handlerInput.requestEnvelope.request.type === 'IntentRequest'
@@ -418,14 +428,14 @@ const YesIntentHandler = {
       .addDelegateDirective({
         name: 'ScheduleAppointmentIntent',
         confirmationStatus: 'NONE',
-        slots: {}
+        slots: {},
       })
       .speak(speakOutput)
       .getResponse();
   },
 };
 
-//handle no resonse
+// handle no resonse
 const NoIntentHandler = {
   canHandle(handlerInput) {
     return handlerInput.requestEnvelope.request.type === 'IntentRequest'
@@ -452,8 +462,8 @@ const HelpIntentHandler = {
 
     const requestAttributes = attributesManager.getRequestAttributes();
 
-    const speakOutput = requestAttributes.t('HELP'),
-      repromptOutput = requestAttributes.t('HELP_REPROMPT');
+    const speakOutput = requestAttributes.t('HELP');
+    const repromptOutput = requestAttributes.t('HELP_REPROMPT');
 
     return responseBuilder
       .speak(speakOutput)
@@ -497,8 +507,8 @@ const ErrorHandler = {
     return true;
   },
   handle(handlerInput, error) {
-    console.log(`Error Request: ${JSON.stringify(handlerInput.requestEnvelope.request)}`);
-    console.log(`Error handled: ${error.message}`);
+    // console.log(`Error Request: ${JSON.stringify(handlerInput.requestEnvelope.request)}`);
+    // console.log(`Error handled: ${error.message}`);
 
     const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
     const speakOutput = requestAttributes.t('ERROR');
@@ -514,26 +524,23 @@ const ErrorHandler = {
 /* INTERCEPTORS */
 const EnvironmentCheckInterceptor = {
   process(handlerInput) {
-
-    //load environment variable from .env
+    // load environment variable from .env
     const result = dotenv.config();
 
-    //check for process.env.S3_PERSISTENCE_BUCKET
+    // check for process.env.S3_PERSISTENCE_BUCKET
     if (!process.env.S3_PERSISTENCE_BUCKET) {
       handlerInput.attributesManager.setRequestAttributes({ invalidConfig: true });
     }
 
-    //check for process.env.SENDGRID_API_KEY
+    // check for process.env.SENDGRID_API_KEY
     if (!process.env.SENDGRID_API_KEY) {
       handlerInput.attributesManager.setRequestAttributes({ invalidConfig: true });
     }
-
-  }
-}
+  },
+};
 
 const PermissionsCheckInterceptor = {
   async process(handlerInput) {
-
     const { serviceClientFactory, attributesManager } = handlerInput;
 
     try {
@@ -544,29 +551,27 @@ const PermissionsCheckInterceptor = {
       const profileMobileNumber = await upsServiceClient.getProfileMobileNumber();
 
       if (!profileName) {
-        //no profile name
-        attributesManager.setRequestAttributes({ permissionsError: "no_name" });
+        // no profile name
+        attributesManager.setRequestAttributes({ permissionsError: 'no_name' });
       }
 
       if (!profileEmail) {
-        //no email address
-        attributesManager.setRequestAttributes({ permissionsError: "no_email" });
+        // no email address
+        attributesManager.setRequestAttributes({ permissionsError: 'no_email' });
       }
 
       if (!profileMobileNumber) {
-        //no mobile number
-        attributesManager.setRequestAttributes({ permissionsError: "no_phone" });
+        // no mobile number
+        attributesManager.setRequestAttributes({ permissionsError: 'no_phone' });
       }
-
     } catch (error) {
-
       if (error.statusCode === 403) {
-        //permissions are not enabled
-        attributesManager.setRequestAttributes({ permissionsError: "permissions_required" });
+        // permissions are not enabled
+        attributesManager.setRequestAttributes({ permissionsError: 'permissions_required' });
       }
     }
   },
-}
+};
 
 const LocalizationInterceptor = {
   process(handlerInput) {
@@ -575,63 +580,65 @@ const LocalizationInterceptor = {
     const localizationClient = i18n.use(sprintf).init({
       lng: requestEnvelope.request.locale,
       fallbackLng: 'en',
-      resources: languageStrings
+      resources: languageStrings,
     });
 
-    localizationClient.localize = function () {
-      const args = arguments;
-      let values = [];
+    localizationClient.localize = (...args) => {
+      // const args = arguments;
+      const values = [];
 
-      for (var i = 1; i < args.length; i++) {
+      for (let i = 1; i < args.length; i += 1) {
         values.push(args[i]);
       }
       const value = i18n.t(args[0], {
         returnObjects: true,
         postProcess: 'sprintf',
-        sprintf: values
+        sprintf: values,
       });
 
       if (Array.isArray(value)) {
         return value[Math.floor(Math.random() * value.length)];
-      } else {
-        return value;
       }
-    }
+      return value;
+    };
 
     const attributes = attributesManager.getRequestAttributes();
-    attributes.t = function (...args) {
-      return localizationClient.localize(...args);
-    };
+    attributes.t = (...args) => localizationClient.localize(...args);
   },
 };
-
 
 /* FUNCTIONS */
 
 function checkAvailability(startTime, endTime, timezone) {
+  const {
+    CLIENT_ID,
+    CLIENT_SECRET,
+    REDIRECT_URIS,
+    ACCESS_TOKEN,
+    REFRESH_TOKEN,
+    TOKEN_TYPE,
+    EXPIRE_DATE,
+    SCOPE,
+  } = process.env;
 
-  const { CLIENT_ID, CLIENT_SECRET, REDIRECT_URIS, ACCESS_TOKEN, REFRESH_TOKEN, TOKEN_TYPE, EXPIRE_DATE, SCOPE } = process.env;
-
-  return new Promise(function (resolve, reject) {
-
+  return new Promise(((resolve, reject) => {
     /** SET UP Auth */
     const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URIS);
-    let tokens = {
+    const tokens = {
       access_token: ACCESS_TOKEN,
       scope: SCOPE,
       token_type: TOKEN_TYPE,
-      expiry_date: EXPIRE_DATE
+      expiry_date: EXPIRE_DATE,
     };
 
-    if (REFRESH_TOKEN)
-      tokens.refresh_token = REFRESH_TOKEN;
+    if (REFRESH_TOKEN) tokens.refresh_token = REFRESH_TOKEN;
 
-    oAuth2Client.credentials = tokens
+    oAuth2Client.credentials = tokens;
 
     /** CREATE Calendar instance */
     const Calendar = google.calendar({
       version: 'v3',
-      auth: oAuth2Client
+      auth: oAuth2Client,
     });
 
     /** RequestBody
@@ -644,84 +651,78 @@ function checkAvailability(startTime, endTime, timezone) {
     const query = {
       items: [
         {
-          id: constants.NOTIFY_EMAIL
-        }
+          id: constants.NOTIFY_EMAIL,
+        },
       ],
       timeMin: startTime,
       timeMax: endTime,
-      timeZone: timezone
+      timeZone: timezone,
     };
 
     Calendar.freebusy.query({
-      requestBody: query
+      requestBody: query,
     }, (err, resp) => {
-
       if (err) {
         reject(err);
-      }
-      else {
-
-        if (resp.data.calendars[constants.NOTIFY_EMAIL].busy && resp.data.calendars[constants.NOTIFY_EMAIL].busy.length > 0) {
-          console.log(`FALSE: ${JSON.stringify(err)}`);
-          resolve(false);
-        } else {
-          console.log(`TRUE: ${JSON.stringify(resp)}`);
-          resolve(true);
-        }
-
+      } else if (resp.data.calendars[constants.NOTIFY_EMAIL].busy
+        && resp.data.calendars[constants.NOTIFY_EMAIL].busy.length > 0) {
+        // console.log(`FALSE: ${JSON.stringify(err)}`);
+        resolve(false);
+      } else {
+        // console.log(`TRUE: ${JSON.stringify(resp)}`);
+        resolve(true);
       }
     });
-  });
+  }));
 }
 
 function getEmailBodyText(appointmentData) {
-
-  let textBody = `Meeting Details:\n`;
-
-  textBody += `Timezone: {{userTimezone}}\n`,
-    textBody += `Name: {{profileName}}\n`,
-    textBody += `Email: {{profileEmail}}\n`,
-    textBody += `Mobile Number: {{profileMobileNumber}}\n`,
-    textBody += `Date: {{appointmentDate}}\n`,
-    textBody += `Time: {{appointmentTime}}\n`;
+  const textBody = 'Meeting Details:\n'
+  + 'Timezone: {{userTimezone}}\n'
+  + 'Name: {{profileName}}\n'
+  + 'Email: {{profileEmail}}\n'
+  + 'Mobile Number: {{profileMobileNumber}}\n'
+  + 'Date: {{appointmentDate}}\n'
+  + 'Time: {{appointmentTime}}\n';
 
   const textBodyTemplate = handlebars.compile(textBody);
 
   return textBodyTemplate(appointmentData);
-
 }
 
 function getEmailBodyHtml(appointmentData) {
-
-  let htmlBody = `<strong>Meeting Details:</strong><br/>`;
-
-  htmlBody += `Timezone: {{userTimezone}}<br/>`,
-    htmlBody += `Name: {{profileName}}<br/>`,
-    htmlBody += `Email: {{profileEmail}}<br/>`,
-    htmlBody += `Mobile Number: {{profileMobileNumber}}<br/>`,
-    htmlBody += `Date: {{appointmentDate}}<br/>`,
-    htmlBody += `Time: {{appointmentTime}}<br/>`;
+  const htmlBody = '<strong>Meeting Details:</strong><br/>'
+  + 'Timezone: {{userTimezone}}<br/>'
+  + 'Name: {{profileName}}<br/>'
+  + 'Email: {{profileEmail}}<br/>'
+  + 'Mobile Number: {{profileMobileNumber}}<br/>'
+  + 'Date: {{appointmentDate}}<br/>'
+  + 'Time: {{appointmentTime}}<br/>';
 
   const htmlBodyTemplate = handlebars.compile(htmlBody);
 
   return htmlBodyTemplate(appointmentData);
-
 }
 
 function bookAppointment(appointmentData) {
-
-  return new Promise(function (resolve, reject) {
-
+  return new Promise(((resolve, reject) => {
     try {
-      const userTime = luxon.DateTime.fromISO(appointmentData.appointmentDateTime, { zone: appointmentData.userTimezone });
+      const userTime = luxon.DateTime.fromISO(appointmentData.appointmentDateTime,
+        { zone: appointmentData.userTimezone });
       const userTimeUtc = userTime.setZone('utc');
 
-      //create .ics 
+      // create .ics
       const event = {
-        start: [userTimeUtc.year, userTimeUtc.month, userTimeUtc.day, userTimeUtc.hour, userTimeUtc.minute],
+        start: [
+          userTimeUtc.year,
+          userTimeUtc.month,
+          userTimeUtc.day,
+          userTimeUtc.hour,
+          userTimeUtc.minute,
+        ],
         startInputType: 'utc',
         endInputType: 'utc',
-        productId: "dabblelab/ics",
+        productId: 'dabblelab/ics',
         duration: { hours: 0, minutes: 30 },
         title: appointmentData.title,
         description: appointmentData.description,
@@ -729,23 +730,29 @@ function bookAppointment(appointmentData) {
         busyStatus: 'BUSY',
         organizer: { name: constants.FROM_NAME, email: constants.FROM_EMAIL },
         attendees: [
-          { name: appointmentData.profileName, email: appointmentData.profileEmail, rsvp: true, partstat: 'ACCEPTED', role: 'REQ-PARTICIPANT' }
-        ]
-      }
+          {
+            name: appointmentData.profileName,
+            email: appointmentData.profileEmail,
+            rsvp: true,
+            partstat: 'ACCEPTED',
+            role: 'REQ-PARTICIPANT',
+          },
+        ],
+      };
 
       const icsData = ics.createEvent(event);
 
-      //save .ics to s3
+      // save .ics to s3
       const s3 = new AWS.S3();
 
       const s3Params = {
         Body: icsData.value,
         Bucket: process.env.S3_PERSISTENCE_BUCKET,
-        Key: `appointments/${appointmentData.appointmentDate}/${event.title.replace(/ /g, "-").toLowerCase()}-${luxon.DateTime.utc().toMillis()}.ics`
+        Key: `appointments/${appointmentData.appointmentDate}/${event.title.replace(/ /g, '-').toLowerCase()}-${luxon.DateTime.utc().toMillis()}.ics`,
       };
 
       const s3Result = s3.putObject(s3Params, (error, data) => {
-        //send email to user
+        // send email to user
         const attachment = new Buffer(icsData.value);
 
         const msg = {
@@ -756,31 +763,26 @@ function bookAppointment(appointmentData) {
           html: getEmailBodyHtml(appointmentData),
           attachments: [
             {
-              content: attachment.toString("base64"),
-              filename: "appointment.ics",
-              type: "text/calendar",
-              disposition: "attachment"
-            }
-          ]
+              content: attachment.toString('base64'),
+              filename: 'appointment.ics',
+              type: 'text/calendar',
+              disposition: 'attachment',
+            },
+          ],
         };
 
-        const sgMail = require('@sendgrid/mail');
         sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-        sgMail.send(msg).then(result => {
-          //mail done sending
-          resolve(true)
+        sgMail.send(msg).then((result) => {
+          // mail done sending
+          resolve(result);
         });
       });
-
     } catch (ex) {
-      console.log(`bookAppointment() ERROR: ${ex.message}`)
-      reject(false)
+      // console.log(`bookAppointment() ERROR: ${ex.message}`);
+      reject(ex);
     }
-
-  });
-
+  }));
 }
-
 
 /* LAMBDA SETUP */
 const skillBuilder = Alexa.SkillBuilders.custom();
@@ -798,12 +800,12 @@ exports.handler = skillBuilder
     NoIntentHandler,
     HelpIntentHandler,
     CancelAndStopIntentHandler,
-    SessionEndedRequestHandler
+    SessionEndedRequestHandler,
   )
   .addRequestInterceptors(
     EnvironmentCheckInterceptor,
     PermissionsCheckInterceptor,
-    LocalizationInterceptor
+    LocalizationInterceptor,
   )
   .addErrorHandlers(ErrorHandler)
   .withApiClient(new Alexa.DefaultApiClient())
