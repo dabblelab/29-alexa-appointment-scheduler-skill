@@ -1,6 +1,9 @@
+// Copyright (c) 2020 Dabble Lab
 // This is an example skill that lets users schedule an appointment with the skill owner.
 // Users can choose a date and time to book an appointment that is then emailed to the skill owner.
-// The skill also supports checking a Google calendar for free/busy times.
+// This skill uses the ASK SDK 2.0 demonstrates the use of dialogs, getting a users email, name,
+// and mobile phone fro the the settings api, along with sending email from a skill and integrating
+// with calendaring to check free/busy times.
 
 const Alexa = require('ask-sdk-core');
 const AWS = require('aws-sdk');
@@ -106,90 +109,50 @@ const LaunchRequestHandler = {
   },
 };
 
-const StartedScheduleAppointmentIntentHandler = {
+const StartedInProgressScheduleAppointmentIntentHandler = {
   canHandle(handlerInput) {
     const { request } = handlerInput.requestEnvelope;
     return request.type === 'IntentRequest'
       && request.intent.name === 'ScheduleAppointmentIntent'
-      && request.dialogState === 'STARTED';
-  },
-  handle(handlerInput) {
-    const currentIntent = handlerInput.requestEnvelope.request.intent;
-
-    const { appointmentDate } = currentIntent.slots;
-    const { appointmentTime } = currentIntent.slots;
-
-    const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
-
-    // appointmentDate.value is empty if the user has not filled the slot.
-    if (!appointmentDate.value && sessionAttributes.appointmentDate) {
-      currentIntent.slots.appointmentDate.value = sessionAttributes.appointmentDate;
-    }
-
-    if (!appointmentTime.value && sessionAttributes.appointmentTime) {
-      currentIntent.slots.appointmentTime.value = sessionAttributes.appointmentTime;
-    }
-
-    // Return the Dialog.Delegate directive
-    return handlerInput.responseBuilder
-      .addDelegateDirective(currentIntent)
-      .getResponse();
-  },
-};
-
-const InProgressScheduleAppointmentIntentHandler = {
-  canHandle(handlerInput) {
-    const { request } = handlerInput.requestEnvelope;
-    return request.type === 'IntentRequest'
-      && request.intent.name === 'ScheduleAppointmentIntent'
-      && request.dialogState === 'IN_PROGRESS';
+      && request.dialogState !== 'COMPLETED';
   },
   async handle(handlerInput) {
-    const {
-      requestEnvelope,
-      serviceClientFactory,
-      responseBuilder,
-      attributesManager,
-    } = handlerInput;
+    const currentIntent = handlerInput.requestEnvelope.request.intent;
+    const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
+    const upsServiceClient = handlerInput.serviceClientFactory.getUpsServiceClient();
 
     // get timezone
-    const { deviceId } = requestEnvelope.context.System.device;
-
-    const requestAttributes = attributesManager.getRequestAttributes();
-    const upsServiceClient = serviceClientFactory.getUpsServiceClient();
-
-    // get slot values
-    const slotDate = Alexa.getSlotValue(requestEnvelope, 'appointmentDate');
-    const slotTime = Alexa.getSlotValue(requestEnvelope, 'appointmentTime');
-
-    // format appointment datetime
-    const appointmentDate = `${slotDate}T${slotTime}`;
-
-    // get timezone
+    const { deviceId } = handlerInput.requestEnvelope.context.System.device;
     const userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
 
-    // set time formats
-    const appointmentDateTime = luxon.DateTime.fromISO(appointmentDate, { zone: userTimezone });
-    const speakAppointmentDateTime = appointmentDateTime
-      .toLocaleString(luxon.DateTime.DATETIME_HUGE);
+    // get slots
+    const appointmentDate = currentIntent.slots.appointmentDate;
+    const appointmentTime = currentIntent.slots.appointmentTime;
 
-    // custom intent confirmation for ScheduleAppointmentIntent
-    if (requestEnvelope.request.intent.confirmationStatus === 'NONE'
-      && requestEnvelope.request.intent.slots.appointmentDate.value
-      && requestEnvelope.request.intent.slots.appointmentTime.value) {
-      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM', speakAppointmentDateTime);
-      const repromptOutput = requestAttributes.t('APPOINTMENT_CONFIRM_REPROMPT', speakAppointmentDateTime);
+    // we have an appointment date and time
+    if (appointmentDate.value && appointmentTime.value) {
+      // format appointment date
+      const dateLocal = luxon.DateTime.fromISO(appointmentDate.value, { zone: userTimezone });
+      const timeLocal = luxon.DateTime.fromISO(appointmentTime.value, { zone: userTimezone });
+      const dateTimeLocal = dateLocal.plus({ 'hours': timeLocal.hour, 'minute': timeLocal.minute });
+      const speakDateTimeLocal = dateTimeLocal.toLocaleString(luxon.DateTime.DATETIME_HUGE);
 
-      return responseBuilder
-        .speak(speakOutput)
-        .reprompt(repromptOutput)
-        .addConfirmIntentDirective()
-        .getResponse();
+      // custom intent confirmation for ScheduleAppointmentIntent
+      if (currentIntent.confirmationStatus === 'NONE'
+        && currentIntent.slots.appointmentDate.value
+        && currentIntent.slots.appointmentTime.value) {
+        const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM', speakDateTimeLocal);
+        const repromptOutput = requestAttributes.t('APPOINTMENT_CONFIRM_REPROMPT', speakDateTimeLocal);
+
+        return handlerInput.responseBuilder
+          .speak(speakOutput)
+          .reprompt(repromptOutput)
+          .addConfirmIntentDirective()
+          .getResponse();
+      }
     }
 
-    const currentIntent = requestEnvelope.request.intent;
-
-    return responseBuilder
+    return handlerInput.responseBuilder
       .addDelegateDirective(currentIntent)
       .getResponse();
   },
@@ -197,62 +160,59 @@ const InProgressScheduleAppointmentIntentHandler = {
 
 // Handles the completion of an appointment. This handler is used when
 // dialog in ScheduleAppointmentIntent is completed.
-const CompleteScheduleAppointmentIntentHandler = {
+const CompletedScheduleAppointmentIntentHandler = {
   canHandle(handlerInput) {
     return handlerInput.requestEnvelope.request.type === 'IntentRequest'
       && handlerInput.requestEnvelope.request.intent.name === 'ScheduleAppointmentIntent'
       && handlerInput.requestEnvelope.request.dialogState === 'COMPLETED';
   },
   async handle(handlerInput) {
-    const {
-      requestEnvelope,
-      serviceClientFactory,
-      responseBuilder,
-      attributesManager,
-    } = handlerInput;
+    const currentIntent = handlerInput.requestEnvelope.request.intent;
+    const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
+    const upsServiceClient = handlerInput.serviceClientFactory.getUpsServiceClient();
 
-    const requestAttributes = attributesManager.getRequestAttributes();
+    // get timezone
+    const { deviceId } = handlerInput.requestEnvelope.context.System.device;
+    const userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
+
+    // get slots
+    const appointmentDate = currentIntent.slots.appointmentDate;
+    const appointmentTime = currentIntent.slots.appointmentTime;
+
+    // format appointment date and time
+    const dateLocal = luxon.DateTime.fromISO(appointmentDate.value, { zone: userTimezone });
+    const timeLocal = luxon.DateTime.fromISO(appointmentTime.value, { zone: userTimezone });
+    const dateTimeLocal = dateLocal.plus({ 'hours': timeLocal.hour, 'minute': timeLocal.minute || 0 });
+    const speakDateTimeLocal = dateTimeLocal.toLocaleString(luxon.DateTime.DATETIME_HUGE);
+
+    // set appontement date to utc and add 30 min for end time
+    const startTimeUtc = dateTimeLocal.toUTC().toISO();
+    const endTimeUtc = dateTimeLocal.plus({ minutes: 30 }).toUTC().toISO();
+
+    // get user profile details
+    const mobileNumber = await upsServiceClient.getProfileMobileNumber();
+    const profileName = await upsServiceClient.getProfileName();
+    const profileEmail = await upsServiceClient.getProfileEmail();
 
     // deal with intent confirmation denied
-    if (requestEnvelope.request.intent.confirmationStatus === 'DENIED') {
+    if (currentIntent.confirmationStatus === 'DENIED') {
       const speakOutput = requestAttributes.t('NO_CONFIRM');
       const repromptOutput = requestAttributes.t('NO_CONFIRM_REPROMPT');
 
-      return responseBuilder
+      return handlerInput.responseBuilder
         .speak(speakOutput)
         .reprompt(repromptOutput)
         .getResponse();
     }
 
-    // get user profile details and timezone setting
-    const upsServiceClient = serviceClientFactory.getUpsServiceClient();
-    const { deviceId } = requestEnvelope.context.System.device;
-
-    const mobileNumber = await upsServiceClient.getProfileMobileNumber();
-    const profileName = await upsServiceClient.getProfileName();
-    const profileEmail = await upsServiceClient.getProfileEmail();
-    const userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
-
-    // get slot values
-    const slotDate = Alexa.getSlotValue(requestEnvelope, 'appointmentDate');
-    const slotTime = Alexa.getSlotValue(requestEnvelope, 'appointmentTime');
-
-    // format appointment datetime
-    const appointmentDate = `${slotDate}T${slotTime}`;
-
-    const userTime = luxon.DateTime.fromISO(appointmentDate, { zone: userTimezone });
-    const speakUserTime = userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE);
-
-    const startTimeUtc = userTime.toUTC().toISO();
-    const endTimeUtc = userTime.plus({ minutes: 30 }).toUTC().toISO();
-
+    // params for booking appointment
     const appointmentData = {
       title: requestAttributes.t('APPOINTMENT_TITLE', profileName),
       description: requestAttributes.t('APPOINTMENT_DESCRIPTION', profileName),
-      appointmentDateTime: `${slotDate}T${slotTime}`,
+      appointmentDateTime: dateTimeLocal,
       userTimezone,
-      appointmentDate: slotDate,
-      appointmentTime: slotTime,
+      appointmentDate: appointmentDate.value,
+      appointmentTime: appointmentTime.value,
       profileName,
       profileEmail,
       profileMobileNumber: `+${mobileNumber.countryCode}${mobileNumber.phoneNumber}`,
@@ -262,9 +222,9 @@ const CompleteScheduleAppointmentIntentHandler = {
     if (!constants.CHECK_FREEBUSY) {
       await bookAppointment(appointmentData);
 
-      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', speakUserTime);
+      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', speakDateTimeLocal);
 
-      return responseBuilder
+      return handlerInput.responseBuilder
         .speak(speakOutput)
         .getResponse();
     }
@@ -276,18 +236,18 @@ const CompleteScheduleAppointmentIntentHandler = {
     if (isTimeSlotAvailable) {
       await bookAppointment(appointmentData);
 
-      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', speakUserTime);
+      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', speakDateTimeLocal);
 
-      return responseBuilder
+      return handlerInput.responseBuilder
         .speak(speakOutput)
         .getResponse();
     }
 
     // time requested is not available so promot to pick another time
-    const speakOutput = requestAttributes.t('TIME_NOT_AVAILABLE', speakUserTime);
-    const speakReprompt = requestAttributes.t('TIME_NOT_AVAILABLE_REPROMPT', speakUserTime);
+    const speakOutput = requestAttributes.t('TIME_NOT_AVAILABLE', speakDateTimeLocal);
+    const speakReprompt = requestAttributes.t('TIME_NOT_AVAILABLE_REPROMPT', speakDateTimeLocal);
 
-    return responseBuilder
+    return handlerInput.responseBuilder
       .speak(speakOutput)
       .reprompt(speakReprompt)
       .getResponse();
@@ -303,58 +263,49 @@ const CheckAvailabilityIntentHandler = {
   },
   async handle(handlerInput) {
     const {
-      requestEnvelope,
-      serviceClientFactory,
       responseBuilder,
       attributesManager,
     } = handlerInput;
 
-    // get request attributes
-    const requestAttributes = attributesManager.getRequestAttributes();
+    const currentIntent = handlerInput.requestEnvelope.request.intent;
+    const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
+    const upsServiceClient = handlerInput.serviceClientFactory.getUpsServiceClient();
 
-    // get slot values
-    const slotDate = Alexa.getSlotValue(requestEnvelope, 'appointmentDate');
-    const slotTime = Alexa.getSlotValue(requestEnvelope, 'appointmentTime');
-
-    // let user know freebusy is not available if freebusy check is disabled
-    if (!constants.CHECK_FREEBUSY) {
-      const speakOutput = requestAttributes.t('FREEBUSY_DISABLED');
-      const speakReprompt = requestAttributes.t('FREEBUSY_DISABLED');
-
-      return responseBuilder
-        .speak(speakOutput)
-        .reprompt(speakReprompt)
-        .getResponse();
-    }
-
-    // get the timezone for the device
-    const upsServiceClient = serviceClientFactory.getUpsServiceClient();
-    const { deviceId } = requestEnvelope.context.System.device;
+    // get timezone
+    const { deviceId } = handlerInput.requestEnvelope.context.System.device;
     const userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
 
-    // format the requested appointment date and time
-    const userTime = luxon.DateTime.fromISO(`${slotDate}T${slotTime}`, { zone: userTimezone });
-    const startTimeUtc = userTime.toUTC().toISO();
-    const endTimeUtc = userTime.plus({ minutes: 30 }).toUTC().toISO();
-    const speakUserTime = userTime.toLocaleString(luxon.DateTime.DATETIME_HUGE);
+    // get slots
+    const appointmentDate = currentIntent.slots.appointmentDate;
+    const appointmentTime = currentIntent.slots.appointmentTime;
+
+    // format appointment date and time
+    const dateLocal = luxon.DateTime.fromISO(appointmentDate.value, { zone: userTimezone });
+    const timeLocal = luxon.DateTime.fromISO(appointmentTime.value, { zone: userTimezone });
+    const dateTimeLocal = dateLocal.plus({ 'hours': timeLocal.hour, 'minute': timeLocal.minute || 0 });
+    const speakDateTimeLocal = dateTimeLocal.toLocaleString(luxon.DateTime.DATETIME_HUGE);
+
+    // set appontement date to utc and add 30 min for end time
+    const startTimeUtc = dateTimeLocal.toUTC().toISO();
+    const endTimeUtc = dateTimeLocal.plus({ minutes: 30 }).toUTC().toISO();
 
     // check to see if the appointment date and time is available
     const isTimeSlotAvailable = await checkAvailability(startTimeUtc, endTimeUtc, userTimezone);
 
-    let speakOutput = requestAttributes.t('TIME_NOT_AVAILABLE', speakUserTime);
-    let speekReprompt = requestAttributes.t('TIME_NOT_AVAILABLE_REPROMPT', speakUserTime);
+    let speakOutput = requestAttributes.t('TIME_NOT_AVAILABLE', speakDateTimeLocal);
+    let speekReprompt = requestAttributes.t('TIME_NOT_AVAILABLE_REPROMPT', speakDateTimeLocal);
 
     if (isTimeSlotAvailable) {
       // save booking time to session to be used for booking
       const sessionAttributes = {
-        appointmentDate: slotDate,
-        appointmentTime: slotTime,
+        appointmentDate,
+        appointmentTime,
       };
 
       attributesManager.setSessionAttributes(sessionAttributes);
 
-      speakOutput = requestAttributes.t('TIME_AVAILABLE', speakUserTime);
-      speekReprompt = requestAttributes.t('TIME_AVAILABLE_REPROMPT', speakUserTime);
+      speakOutput = requestAttributes.t('TIME_AVAILABLE', speakDateTimeLocal);
+      speekReprompt = requestAttributes.t('TIME_AVAILABLE_REPROMPT', speakDateTimeLocal);
 
       return responseBuilder
         .speak(speakOutput)
@@ -770,7 +721,7 @@ function bookAppointment(appointmentData) {
         });
       });
     } catch (ex) {
-      // console.log(`bookAppointment() ERROR: ${ex.message}`);
+      console.log(`bookAppointment() ERROR: ${ex.message}`);
       reject(ex);
     }
   }));
@@ -787,9 +738,8 @@ exports.handler = Alexa.SkillBuilders.custom()
     InvalidPermissionsHandler,
     LaunchRequestHandler,
     CheckAvailabilityIntentHandler,
-    StartedScheduleAppointmentIntentHandler,
-    InProgressScheduleAppointmentIntentHandler,
-    CompleteScheduleAppointmentIntentHandler,
+    StartedInProgressScheduleAppointmentIntentHandler,
+    CompletedScheduleAppointmentIntentHandler,
     YesIntentHandler,
     NoIntentHandler,
     HelpIntentHandler,
