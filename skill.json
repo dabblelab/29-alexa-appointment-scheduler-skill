@@ -6,8 +6,8 @@
           "examplePhrases": [],
           "keywords": [],
           "name": "Appointment Scheduler",
-          "smallIconUri": "file://assets/images/en-US_smallIconUri.png",
-          "largeIconUri": "file://assets/images/en-US_largeIconUri.png"
+          "smallIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-sm.png",
+          "largeIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-lg.png"
         }
       },
       "automaticDistribution": {
