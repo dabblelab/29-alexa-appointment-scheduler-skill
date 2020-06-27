@@ -32,6 +32,17 @@
         }
       }
     },
+    "permissions": [
+      {
+        "name": "alexa::profile:name:read"
+      },
+      {
+        "name": "alexa::profile:email:read"
+      },
+      {
+        "name": "alexa::profile:mobile_number:read"
+      }
+    ],
     "manifestVersion": "1.0",
     "privacyAndCompliance": {
       "allowsPurchases": false,
