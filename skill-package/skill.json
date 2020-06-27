@@ -3,22 +3,25 @@
     "publishingInformation": {
       "locales": {
         "en-US": {
-          "examplePhrases": [
-            "Alexa open Appointment Scheduler",
-            "Alexa start Appointment Scheduler",
-            "Alexa ask Appointment Scheduler to schedule an appointment for tomorrow"
-          ],
+          "examplePhrases": [],
+          "keywords": [],
           "name": "Appointment Scheduler",
-          "smallIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-sm.png",
-          "largeIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-lg.png"
+          "smallIconUri": "file://assets/images/en-US_smallIconUri.png",
+          "largeIconUri": "file://assets/images/en-US_largeIconUri.png"
         }
-      }
+      },
+      "automaticDistribution": {
+        "isActive": false
+      },
+      "isAvailableWorldwide": true,
+      "distributionCountries": []
     },
     "apis": {
       "custom": {
         "endpoint": {
-          "sourceDir": "lambda"
-        }
+          "uri": "arn:aws:lambda:us-east-1:105031543810:function:8abc1307-7a2e-4a84-b3d5-9037e5dbb1da:Release_0"
+        },
+        "interfaces": []
       }
     },
     "permissions": [
@@ -32,6 +35,10 @@
         "name": "alexa::profile:mobile_number:read"
       }
     ],
-    "manifestVersion": "1.0"
+    "privacyAndCompliance": {
+      "locales": {
+        "en-US": {}
+      }
+    }
   }
 }

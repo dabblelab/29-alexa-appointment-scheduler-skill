@@ -17,12 +17,8 @@ const { google } = require('googleapis');
 const sgMail = require('@sendgrid/mail');
 
 /* CONSTANTS */
-const constants = {
-  CHECK_FREEBUSY: true, // set this to false to disable freebusy check
-  FROM_NAME: 'Dabble Lab',
-  FROM_EMAIL: 'learn@dabblelab.com',
-  NOTIFY_EMAIL: 'steve@dabblelab.com',
-};
+// To set constants, change the values in .env.sample then
+// rename .env.sample to just .env
 
 /* LANGUAGE STRINGS */
 const languageStrings = require('./languages/languageStrings');
@@ -40,12 +36,11 @@ const InvalidConfigHandler = {
     return invalidConfig;
   },
   handle(handlerInput) {
-    const { responseBuilder, attributesManager } = handlerInput;
-    const requestAttributes = attributesManager.getRequestAttributes();
+    const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
 
     const speakOutput = requestAttributes.t('ENV_NOT_CONFIGURED');
 
-    return responseBuilder
+    return handlerInput.responseBuilder
       .speak(speakOutput)
       .getResponse();
   },
@@ -60,28 +55,26 @@ const InvalidPermissionsHandler = {
     return attributes.permissionsError;
   },
   handle(handlerInput) {
-    const { responseBuilder, attributesManager } = handlerInput;
-
-    const attributes = attributesManager.getRequestAttributes();
+    const attributes = handlerInput.attributesManager.getRequestAttributes();
 
     switch (attributes.permissionsError) {
       case 'no_name':
-        return responseBuilder
+        return handlerInput.responseBuilder
           .speak(attributes.t('NAME_REQUIRED'))
           .withSimpleCard(attributes.t('SKILL_NAME'), attributes.t('NAME_REQUIRED_REPROMPT'))
           .getResponse();
       case 'no_email':
-        return responseBuilder
+        return handlerInput.responseBuilder
           .speak(attributes.t('EMAIL_REQUIRED'))
           .withSimpleCard(attributes.t('SKILL_NAME'), attributes.t('EMAIL_REQUIRED_REPROMPT'))
           .getResponse();
       case 'no_phone':
-        return responseBuilder
+        return handlerInput.responseBuilder
           .speak(attributes.t('PHONE_REQUIRED'))
           .withSimpleCard(attributes.t('SKILL_NAME'), attributes.t('PHONE_REQUIRED_REPROMPT'))
           .getResponse();
       case 'permissions_required':
-        return responseBuilder
+        return handlerInput.responseBuilder
           .speak(attributes.t('PERMISSIONS_REQUIRED'))
           .withAskForPermissionsConsentCard(['alexa::profile:email:read'])
           .getResponse();
@@ -219,7 +212,7 @@ const CompletedScheduleAppointmentIntentHandler = {
     };
 
     // schedule without freebusy check
-    if (!constants.CHECK_FREEBUSY) {
+    if (!process.env.CHECK_FREEBUSY) {
       await bookAppointment(appointmentData);
 
       const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', speakDateTimeLocal);
@@ -449,7 +442,8 @@ const IntentReflectorHandler = {
 
 // This function checks to make sure required environment vairables
 // exists. This function will only be called if required configuration
-// is not found so it's only a utilty function.
+// is not found. So, it's just a utilty function and it is not used
+// after the skill is correctly configured.
 const EnvironmentCheckInterceptor = {
   process(handlerInput) {
     // load environment variable from .env
@@ -457,11 +451,6 @@ const EnvironmentCheckInterceptor = {
 
     // check for process.env.S3_PERSISTENCE_BUCKET
     if (!process.env.S3_PERSISTENCE_BUCKET) {
-      handlerInput.attributesManager.setRequestAttributes({ invalidConfig: true });
-    }
-
-    // check for process.env.SENDGRID_API_KEY
-    if (!process.env.SENDGRID_API_KEY) {
       handlerInput.attributesManager.setRequestAttributes({ invalidConfig: true });
     }
   },
@@ -589,7 +578,7 @@ function checkAvailability(startTime, endTime, timezone) {
     const query = {
       items: [
         {
-          id: constants.NOTIFY_EMAIL,
+          id: process.env.NOTIFY_EMAIL,
         },
       ],
       timeMin: startTime,
@@ -602,8 +591,8 @@ function checkAvailability(startTime, endTime, timezone) {
     }, (err, resp) => {
       if (err) {
         reject(err);
-      } else if (resp.data.calendars[constants.NOTIFY_EMAIL].busy
-        && resp.data.calendars[constants.NOTIFY_EMAIL].busy.length > 0) {
+      } else if (resp.data.calendars[process.env.NOTIFY_EMAIL].busy
+        && resp.data.calendars[process.env.NOTIFY_EMAIL].busy.length > 0) {
         resolve(false);
       } else {
         resolve(true);
@@ -670,7 +659,7 @@ function bookAppointment(appointmentData) {
         description: appointmentData.description,
         status: 'CONFIRMED',
         busyStatus: 'BUSY',
-        organizer: { name: constants.FROM_NAME, email: constants.FROM_EMAIL },
+        organizer: { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL },
         attendees: [
           {
             name: appointmentData.profileName,
@@ -699,8 +688,8 @@ function bookAppointment(appointmentData) {
         const attachment = Buffer.from(icsData.value);
 
         const msg = {
-          to: constants.NOTIFY_EMAIL,
-          from: constants.FROM_EMAIL,
+          to: process.env.NOTIFY_EMAIL,
+          from: process.env.FROM_EMAIL,
           subject: appointmentData.title,
           text: getEmailBodyText(appointmentData),
           html: getEmailBodyHtml(appointmentData),
