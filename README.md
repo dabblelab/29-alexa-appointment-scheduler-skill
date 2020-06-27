@@ -1,4 +1,4 @@
-# Build An Alexa Fact Skill
+# Build An Appointment Scheduler Skill
 <img src="https://m.media-amazon.com/images/G/01/mobile-apps/dex/alexa/alexa-skills-kit/tutorials/quiz-game/header._TTH_.png" />
 
 This is an example skill that lets users schedule an appointment with the skill owner. 
