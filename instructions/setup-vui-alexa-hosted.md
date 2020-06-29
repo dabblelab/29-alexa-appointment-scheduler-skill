@@ -1,7 +1,7 @@
-# Build An Alexa Fact Skill
+# Build An Appointment Scheduler Skill
 <img src="https://m.media-amazon.com/images/G/01/mobile-apps/dex/alexa/alexa-skills-kit/tutorials/quiz-game/header._TTH_.png" />
 
-Build an engaging facts skill about any topic. Alexa will select a fact at random and share it with the user when the skill is invoked.
+Build a skill that lets users request and book an appointment with you.
 
 ## Setting up Your Alexa Skill in the Developer Console (Alexa Hosted)
 

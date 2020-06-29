@@ -1,4 +1,4 @@
-# Build An Alexa Fact Skill
+# Build An Appointment Scheduler Skill
 <img src="https://m.media-amazon.com/images/G/01/mobile-apps/dex/alexa/alexa-skills-kit/tutorials/fact/header._TTH_.png" />
 
 ## Setup w/ ASK CLI

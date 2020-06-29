@@ -1,7 +1,7 @@
-# Build An Alexa Appointment Scheduling Skill
+# Build An Appointment Scheduler Skill
 <img src="https://m.media-amazon.com/images/G/01/mobile-apps/dex/alexa/alexa-skills-kit/tutorials/quiz-game/header._TTH_.png" />
 
-Build a skill that lets users book an appointment with you. Users can speak a date and time they'd like to meet, and the appointment request gets emailed to you. Optionally, you cal also configure this skill to check your availability using free/busy checking on a Google calendar. 
+Build a skill that lets users request and book an appointment with you.
 
 ## Customize the Skill to be Yours
 
