@@ -24,7 +24,7 @@ module.exports = {
     HELP: [
       'This skill can help you schedule an appointment. Would you like to schedule an appointment?',
     ],
-    HELP_REPROMPT: ['S42S'],
+    HELP_REPROMPT: ['Would you like to schedule an appointment?'],
     CANCEL_STOP_RESPONSE: ['Good bye,', 'Okay. Ill be here if you need me.'],
     APPOINTMENT_CONFIRM: ['I have your appointment request for %s. Is that correct?'],
     APPOINTMENT_CONFIRM_REPROMPT: ['Should I send your appointment request for %s?'],
@@ -35,7 +35,7 @@ module.exports = {
       'Sorry, %s is not available. Would you like to try another time?',
     ],
     TIME_NOT_AVAILABLE_REPROMPT: ['Would you like to try another time?'],
-    APPOINTMENT_TITLE: ' Appointment with %s,',
+    APPOINTMENT_TITLE: 'Appointment with %s,',
     APPOINTMENT_DESCRIPTION: ' An appointment schedule by Alexa,',
     NO_CONFIRM: 'Okay, to start over you can say: schedule an appointment, or to cancel say stop.,',
     NO_CONFIRM_REPROMOT: 'You can say schedule an appointment to start over, or stop to cancel.,',
