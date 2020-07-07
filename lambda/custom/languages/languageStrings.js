@@ -14,6 +14,8 @@ module.exports = {
   fr: require("./fr.js"),
   "fr-CA": require("./fr-CA.js"),
   "fr-FR": require("./fr-FR.js"),
+  hi: require("./hi.js"),
+  "hi-IN": require("./hi-IN.js"),
   it: require("./it.js"),
   "it-IT": require("./it-IT.js"),
   ja: require("./ja.js"),

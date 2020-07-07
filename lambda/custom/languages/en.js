@@ -33,13 +33,13 @@ module.exports = {
       'Okay. I\'ll be here if you need me.',
     ],
     APPOINTMENT_CONFIRM: [
-      'I have your appointment request for %s. Is that correct?',
+      'I have your appointment request with %s set for %s. Would you like to confirm this request?',
     ],
     APPOINTMENT_CONFIRM_REPROMPT: [
       'Should I send your appointment request for %s?',
     ],
     APPOINTMENT_CONFIRM_COMPLETED: [
-      'Your appointment on %s has been scheduled.',
+      'Your appointment with %s on %s has been scheduled. You\'ll also recieve an email confirmation. Please reply to the email confirmation to cancel or reschedule. Thank you.',
     ],
     TIME_AVAILABLE: [
       '%s is available. Would you like to book it?',
@@ -54,13 +54,13 @@ module.exports = {
       'Would you like to try another time?',
     ],
     APPOINTMENT_TITLE: 'Appointment with %s',
-    APPOINTMENT_DESCRIPTION: 'An appointment schedule by Alexa',
-    EMAIL_SUBJECT: 'Appointment Request from %s',
-    EMAIL_TEXT: 'Contact Details\n\nNAME: %s\nEMAIL: %s\nPHONE: %s\n\n',
+    APPOINTMENT_DESCRIPTION: 'This is a telephone appointment for %s with %s. We will call you at %s. If you need to cancel or change this appointment, please reply to this email.',
+    EMAIL_SUBJECT: 'Appointment for %s with %s',
+    EMAIL_TEXT: 'This is a telephone appointment for %s with %s. We will call you at %s. If you need to cancel or change this appointment, please reply to this email.',
     NO_CONFIRM: 'Okay, to start over you can say: schedule an appointment, or to cancel say stop.',
     NO_CONFIRM_REPROMOT: 'You can say schedule an appointment to start over, or stop to cancel.',
     ENV_NOT_CONFIGURED: 'One or more environment variables is not set. Please see the readme file for help.',
-    PERMISSIONS_REQUIRED: 'Please enable profile permissions in the Amazon Alexa app.',
+    PERMISSIONS_REQUIRED: 'In order to book and confirm appointments, %s will need access to your name, email address, and phone number. To provide access, please enable profile permissions in the Amazon Alexa app.',
     EMAIL_REQUIRED: 'It looks like you don\'t have an email set. You can set your email in the Alexa companion app.',
     EMAIL_REQUIRED_REPROMPT: 'Please set your email address in the Alexa companion app.',
     NAME_REQUIRED: 'It looks like you don\'t have your name set. You can set your name in the Alexa companion app.',
