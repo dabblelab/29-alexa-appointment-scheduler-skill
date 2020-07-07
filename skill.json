@@ -1,35 +1,10 @@
 {
   "manifest": {
-    "publishingInformation": {
-      "locales": {
-        "en-US": {
-          "summary": "Sample Short Description",
-          "examplePhrases": [
-            "Alexa open hello world template",
-            "Alexa tell hello world template I am Jeff",
-            "Alexa tell hello world template my name is Peter"
-          ],
-          "keywords": [
-            "keyword1",
-            "keyword2",
-            "keyword3"
-          ],
-          "name": "Apointment Scheduler",
-          "description": "Sample Full Description",
-          "smallIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-sm.png",
-          "largeIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-lg.png"
-        }
-      },
-      "isAvailableWorldwide": true,
-      "testingInstructions": "No special instructions.",
-      "category": "EDUCATION_AND_REFERENCE",
-      "distributionCountries": []
-    },
     "apis": {
       "custom": {
         "endpoint": {
-          "sourceDir": "lambda/custom"
-        }
+        },
+        "interfaces": []
       }
     },
     "permissions": [
@@ -43,19 +18,26 @@
         "name": "alexa::profile:mobile_number:read"
       }
     ],
-    "manifestVersion": "1.0",
-    "privacyAndCompliance": {
-      "allowsPurchases": false,
+    "publishingInformation": {
       "locales": {
         "en-US": {
-          "termsOfUseUrl": "http://dabblelab.com/terms",
-          "privacyPolicyUrl": "http://dabblelab.com/privacy"
-        }
-      },
-      "isExportCompliant": true,
-      "containsAds": false,
-      "isChildDirected": false,
-      "usesPersonalInfo": false
-    }
+          "name": "Appointment Scheduler",
+          "summary": "This skil lets users schedule an appointment.",
+          "description": "This skil lets users request an appointment.\n\nTo use this skill you'll need to enable profile permissions in the Alexa compainion app. If you need any assistants using this skill or if you any suggestions, please email us.\n\nThank you!",
+          "examplePhrases": [
+            "Alexa open Appointment Scheduler",
+            "Alexa launch Appointment Scheduler",
+            "Alexa start Appointment Scheduler"
+          ],
+          "smallIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-sm.png",
+          "largeIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-lg.png"
+        },
+        "category": "EDUCATION_AND_REFERENCE",
+        "testingInstructions": "This skill was built using the Appointment Scheduler Template.",
+        "isAvailableWorldwide": true,
+        "distributionCountries": []
+      }
+    },
+    "manifestVersion": "1.0"
   }
 }
