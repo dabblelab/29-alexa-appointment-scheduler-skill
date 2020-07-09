@@ -2,8 +2,7 @@
   "manifest": {
     "apis": {
       "custom": {
-        "endpoint": {
-        },
+        "endpoint": {},
         "interfaces": []
       }
     },
@@ -22,8 +21,6 @@
       "locales": {
         "en-US": {
           "name": "Appointment Scheduler",
-          "summary": "This skil lets users schedule an appointment.",
-          "description": "This skil lets users request an appointment.\n\nTo use this skill you'll need to enable profile permissions in the Alexa compainion app. If you need any assistants using this skill or if you any suggestions, please email us.\n\nThank you!",
           "examplePhrases": [
             "Alexa open Appointment Scheduler",
             "Alexa launch Appointment Scheduler",
