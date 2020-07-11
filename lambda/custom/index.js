@@ -10,14 +10,13 @@ const AWS = require('aws-sdk');
 const dotenv = require('dotenv');
 const i18n = require('i18next');
 const sprintf = require('i18next-sprintf-postprocessor');
-const handlebars = require('handlebars');
 const luxon = require('luxon');
 const ics = require('ics');
 const { google } = require('googleapis');
 const sgMail = require('@sendgrid/mail');
 
 /* CONSTANTS */
-// To set constants, change the values in .env.sample then
+// To set constants, change the value in .env.sample then
 // rename .env.sample to just .env
 
 /* LANGUAGE STRINGS */
@@ -75,8 +74,8 @@ const InvalidPermissionsHandler = {
           .getResponse();
       case 'permissions_required':
         return handlerInput.responseBuilder
-          .speak(attributes.t('PERMISSIONS_REQUIRED'))
-          .withAskForPermissionsConsentCard(['alexa::profile:email:read'])
+          .speak(attributes.t('PERMISSIONS_REQUIRED', attributes.t('SKILL_NAME')))
+          .withAskForPermissionsConsentCard(['alexa::profile:email:read', 'alexa::profile:name:read', 'alexa::profile:mobile_number:read'])
           .getResponse();
       default:
         // throw an error if the permission is not defined
@@ -134,8 +133,8 @@ const StartedInProgressScheduleAppointmentIntentHandler = {
       if (currentIntent.confirmationStatus === 'NONE'
         && currentIntent.slots.appointmentDate.value
         && currentIntent.slots.appointmentTime.value) {
-        const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM', speakDateTimeLocal);
-        const repromptOutput = requestAttributes.t('APPOINTMENT_CONFIRM_REPROMPT', speakDateTimeLocal);
+        const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM', process.env.FROM_NAME, speakDateTimeLocal);
+        const repromptOutput = requestAttributes.t('APPOINTMENT_CONFIRM_REPROMPT', process.env.FROM_NAME, speakDateTimeLocal);
 
         return handlerInput.responseBuilder
           .speak(speakOutput)
@@ -162,6 +161,7 @@ const CompletedScheduleAppointmentIntentHandler = {
   async handle(handlerInput) {
     const currentIntent = handlerInput.requestEnvelope.request.intent;
     const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
+    const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
     const upsServiceClient = handlerInput.serviceClientFactory.getUpsServiceClient();
 
     // get timezone
@@ -211,13 +211,20 @@ const CompletedScheduleAppointmentIntentHandler = {
       profileMobileNumber: `+${mobileNumber.countryCode}${mobileNumber.phoneNumber}`,
     };
 
+    sessionAttributes.appointmentData = appointmentData;
+    handlerInput.attributesManager.setSessionAttributes(sessionAttributes);
+
     // schedule without freebusy check
     if (!process.env.CHECK_FREEBUSY) {
-      await bookAppointment(appointmentData);
+      await bookAppointment(handlerInput);
 
-      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', speakDateTimeLocal);
+      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', process.env.FROM_NAME, speakDateTimeLocal);
 
       return handlerInput.responseBuilder
+        .withSimpleCard(
+          requestAttributes.t('APPOINTMENT_TITLE', process.env.FROM_NAME),
+          requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', process.env.FROM_NAME, speakDateTimeLocal),
+        )
         .speak(speakOutput)
         .getResponse();
     }
@@ -227,11 +234,15 @@ const CompletedScheduleAppointmentIntentHandler = {
 
     // schedule with freebusy check
     if (isTimeSlotAvailable) {
-      await bookAppointment(appointmentData);
+      await bookAppointment(handlerInput);
 
-      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', speakDateTimeLocal);
+      const speakOutput = requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', process.env.FROM_NAME, speakDateTimeLocal);
 
       return handlerInput.responseBuilder
+        .withSimpleCard(
+          requestAttributes.t('APPOINTMENT_TITLE', process.env.FROM_NAME),
+          requestAttributes.t('APPOINTMENT_CONFIRM_COMPLETED', process.env.FROM_NAME, speakDateTimeLocal),
+        )
         .speak(speakOutput)
         .getResponse();
     }
@@ -601,43 +612,14 @@ function checkAvailability(startTime, endTime, timezone) {
   }));
 }
 
-// A helper function that formats and returns the
-// text content for the email notification
-function getEmailBodyText(appointmentData) {
-  const textBody = 'Meeting Details:\n'
-  + 'Timezone: {{userTimezone}}\n'
-  + 'Name: {{profileName}}\n'
-  + 'Email: {{profileEmail}}\n'
-  + 'Mobile Number: {{profileMobileNumber}}\n'
-  + 'Date: {{appointmentDate}}\n'
-  + 'Time: {{appointmentTime}}\n';
-
-  const textBodyTemplate = handlebars.compile(textBody);
-
-  return textBodyTemplate(appointmentData);
-}
-
-// A helper function that formats and returns the
-// html content for the email notification
-function getEmailBodyHtml(appointmentData) {
-  const htmlBody = '<strong>Meeting Details:</strong><br/>'
-  + 'Timezone: {{userTimezone}}<br/>'
-  + 'Name: {{profileName}}<br/>'
-  + 'Email: {{profileEmail}}<br/>'
-  + 'Mobile Number: {{profileMobileNumber}}<br/>'
-  + 'Date: {{appointmentDate}}<br/>'
-  + 'Time: {{appointmentTime}}<br/>';
-
-  const htmlBodyTemplate = handlebars.compile(htmlBody);
-
-  return htmlBodyTemplate(appointmentData);
-}
-
 // This function processes a booking request by creating a .ics file,
 // saving the .isc file to S3 and sending it via email to the skill ower.
-function bookAppointment(appointmentData) {
+function bookAppointment(handlerInput) {
   return new Promise(((resolve, reject) => {
+    const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+    const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
     try {
+      const appointmentData = sessionAttributes.appointmentData;
       const userTime = luxon.DateTime.fromISO(appointmentData.appointmentDateTime,
         { zone: appointmentData.userTimezone });
       const userTimeUtc = userTime.setZone('utc');
@@ -688,11 +670,13 @@ function bookAppointment(appointmentData) {
         const attachment = Buffer.from(icsData.value);
 
         const msg = {
-          to: process.env.NOTIFY_EMAIL,
+          to: [process.env.NOTIFY_EMAIL, appointmentData.profileEmail],
           from: process.env.FROM_EMAIL,
-          subject: appointmentData.title,
-          text: getEmailBodyText(appointmentData),
-          html: getEmailBodyHtml(appointmentData),
+          subject: requestAttributes.t('EMAIL_SUBJECT', appointmentData.profileName, process.env.FROM_NAME),
+          text: requestAttributes.t('EMAIL_TEXT',
+            appointmentData.profileName,
+            process.env.FROM_NAME,
+            appointmentData.profileMobileNumber),
           attachments: [
             {
               content: attachment.toString('base64'),
