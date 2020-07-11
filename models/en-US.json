@@ -43,38 +43,21 @@
                         }
                     ],
                     "samples": [
-                        
-                        "make an appointment on {appointmentDate} at {appointmentTime}" , 
-                        
-                        "schedule an appointment on {appointmentDate} at {appointmentTime}" , 
-                        
-                        "schedule an appointment at {appointmentTime} on {appointmentDate}" , 
-                        
-                        "{appointmentTime} on {appointmentDate}" , 
-                        
-                        "{appointmentDate} at {appointmentTime}" , 
-                        
-                        "make an appointment for {appointmentDate} at {appointmentTime}" , 
-                        
-                        "make an appointment for {appointmentDate}" , 
-                        
-                        "make an appointment" , 
-                        
-                        "set an appointment" , 
-                        
-                        "setup an appointment" , 
-                        
-                        "setup a meeting" , 
-                        
-                        "set up a call" , 
-                        
-                        "schedule a call" , 
-                        
-                        "schedule a meeting" , 
-                        
+                        "make an appointment on {appointmentDate} at {appointmentTime}", 
+                        "schedule an appointment on {appointmentDate} at {appointmentTime}", 
+                        "schedule an appointment at {appointmentTime} on {appointmentDate}", 
+                        "{appointmentTime} on {appointmentDate}", 
+                        "{appointmentDate} at {appointmentTime}", 
+                        "make an appointment for {appointmentDate} at {appointmentTime}", 
+                        "make an appointment for {appointmentDate}", 
+                        "make an appointment", 
+                        "set an appointment", 
+                        "setup an appointment", 
+                        "setup a meeting", 
+                        "set up a call", 
+                        "schedule a call", 
+                        "schedule a meeting", 
                         "schedule an appointment" 
-                        
-                        
                     ]
                 },
                 {
@@ -91,31 +74,21 @@
                         {
                             "name": "appointmentDate",
                             "type": "AMAZON.DATE",
-                            "samples": [
-                                
-                                "on {appointmentDate}" , 
-                                
-                                "check {appointmentDate}" , 
-                                
-                                "try {appointmentDate}" , 
-                                
-                                "{appointmentDate}" 
-                                
+                            "samples": [                            
+                                "on {appointmentDate}", 
+                                "check {appointmentDate}", 
+                                "try {appointmentDate}", 
+                                "{appointmentDate}"
                             ]
                         },
                         {
                             "name": "appointmentTime",
                             "type": "AMAZON.TIME",
                             "samples": [
-                                
-                                "check {appointmentTime}" , 
-                                
-                                "how about {appointmentTime}" , 
-                                
-                                "try {appointmentTime}" , 
-                                
-                                "{appointmentTime}" 
-                                
+                                "check {appointmentTime}", 
+                                "how about {appointmentTime}", 
+                                "try {appointmentTime}", 
+                                "{appointmentTime}"
                             ]
                         }
                     ],
