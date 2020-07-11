@@ -1,57 +1,73 @@
 module.exports = {
   translation: {
-    SKILL_NAME: 'Appointment Scheduler',
+    SKILL_NAME: 'Logiciel de prise de rendez-vous',
     GREETING: [
-      'Bonjour. Bienvenue chez% s. Souhaitez-vous prendre rendez-vous? ,',
-      'Salut. Bienvenue chez% s. Souhaitez-vous prendre rendez-vous? ,',
-      'Salut à tous. Bienvenue chez% s. Souhaitez-vous prendre rendez-vous? ,'
+      'Bonjour. Bienvenue sur % s. Souhaitez-vous créer un rendez-vous?',
+      'Salut. Bienvenue sur % s. Souhaitez-vous créer un rendez-vous?',
+      'Coucou. Bienvenue sur % s. Souhaitez-vous créer un rendez-vous?',
     ],
     GREETING_REPROMPT: [
-      'Voulez-vous prendre un rendez-vous ?',
-      'Puis-je vous fixer un rendez-vous ?',
-      'Je peux vous fixer un rendez-vous.Voulez-vous commencer?'
+      'Souhaitez-vous créer un rendez-vous?',
+      'Est-ce que je peux créer un rendez-vous pour vous?',
+      'Je peux créer un rendez-vous pour vous. Souhaitez-vous commencer?',
     ],
     SCHEDULE_YES: [
-      'Daccord, prenons un rendez-vous. ,',
-      ' Daccord, commençons ,',
-      'Très bien, nous allons vous programmer.'
+      'Bien, on va créer un rendez-vous',
+      'Bien, on va commencer.',
+      'D'accord, nous allons vous créer un rendez-vous.',
     ],
     SCHEDULE_NO: [
-      'Très bien. Arrêtez-vous quand vous voulez planifier un rendez-vous. »,',
-      'Daccord, je serai là quand vous voudrez prendre rendez-vous,',
-      'Daccord, lorsque vous êtes prêt à prendre rendez-vous, veuillez vous arrêter. »'
+      'D'accord. Retournez quand vous souhaitez créer un rendez-vous.',
+      'Bien, je serai ici quand vous souhaitez créer un rendez-vous.',
+      'D'accord, quand vous êtes prêts pour créer un rendez-vous n'hésiter pas à retourner.',
     ],
     HELP: [
-      '«Cette skill peut vous aider à planifier un rendez-vous. Voulez-vous prendre rendez-vous? '
+      ' Cette skill peut vous aider à créer un rendez-vous. Souhaitez vous créer un rendez-vous ?',
     ],
-    HELP_REPROMPT: [ 'S42S' ],
+    HELP_REPROMPT: [
+      'Souhaitez vous créer un rendez-vous?',
+    ],
     CANCEL_STOP_RESPONSE: [
       'Au revoir',
-      ' Daccord. Je serai là si vous avez besoin de moi.'
+      'D'accord. Je serai ici si vous avez besoin de moi.',
     ],
-    APPOINTMENT_CONFIRM: [ 'Jai votre demande de rendez-vous pour les %. Est-ce exact ?' ],
-    APPOINTMENT_CONFIRM_REPROMPT: [ 'Dois-je envoyer votre demande de rendez-vous pour% s?' ],
-    APPOINTMENT_CONFIRM_COMPLETED: [ 'Votre rendez-vous sur% s a été planifié.»' ],
-    TIME_AVAILABLE: [ '% s est disponible. Voulez-vous le réserver? ' ],
-    TIME_AVAILABLE_REPROMPT: [ 'Voulez-vous réserver% s?' ],
+    APPOINTMENT_CONFIRM: [
+      'J'ai  programmé votre  rendez-vous avec% pour le % s. Souhaitez-vous le confirmer ?',
+    ],
+    APPOINTMENT_CONFIRM_REPROMPT: [
+      'Dois-je envoyer votre demande de rendez-vous pour% s?',
+    ],
+    APPOINTMENT_CONFIRM_COMPLETED: [
+      'Votre rendez-vous avec% s sur% s a été créé. Vous recevrez également une confirmation par e-mail. Veuillez répondre à l'e-mail de confirmation pour annuler ou reprogrammer. Je vous remercie.',
+    ],
+    TIME_AVAILABLE: [
+      '% s est disponible. Souhaitez-vous le réserver?',
+    ],
+    TIME_AVAILABLE_REPROMPT: [
+      'Souhaitez-vous réserver %s ?',
+    ],
     TIME_NOT_AVAILABLE: [
-      'Désolé,% s nest pas disponible. Voulez-vous essayer une autre fois? '
+      'Désolé,% s n'est pas disponible. Voulez-vous réessayer pour une autre date?',
     ],
-    TIME_NOT_AVAILABLE_REPROMPT: [ 'Voulez-vous essayer une autre fois?' ],
-    APPOINTMENT_TITLE: ' Rendez-vous avec%s,',
-    APPOINTMENT_DESCRIPTION: ' Un calendrier de rendez-vous par Alexa,',
-    NO_CONFIRM: 'Daccord, pour recommencer, vous pouvez dire: planifier un rendez-vous, ou annuler dire arrêtes.,',
-    NO_CONFIRM_REPROMOT: 'Vous pouvez dire planifier un rendez-vous pour recommencer, ou arrêter pour lannuler.,',
-    ENV_NOT_CONFIGURED: ' Une ou plusieurs variables denvironnement ne sont pas fixées. Veuillez consulter le fichier readme pour obtenir de laide.,',
-    PERMISSIONS_REQUIRED: ' Veuillez activer les autorisations de profil dans Amazon Alexa app.,',
-    EMAIL_REQUIRED: ' Il semble que vous nayez pas de poste électronique. Vous pouvez définir votre adresse électronique dans lapplication Alexa app.,',
-    EMAIL_REQUIRED_REPROMPT: ' Veuillez indiquer votre adresse électronique dans Alexa app.,',
-    NAME_REQUIRED: ' Il semble que votre nom ne soit pas défini. Vous pouvez définir votre nom dans Alexa app.,',
-    NAME_REQUIRED_REPROMPT: ' Veuillez saisir votre nom dans Alexa app.,',
-    PHONE_REQUIRED: 'Il semble que votre numéro de mobile ne soit pas défini. Vous pouvez définir votre numéro de mobile dans Alexa app.,',
-    PHONE_REQUIRED_REPROMPT: ' Veuillez indiquer votre numéro de téléphone dans Alexa app.,',
-    ERROR: ' Désolé, je nai pas compris. Pouvez-vous répéter?,',
-    ERROR_REPROMPT: ' Pouvez-vous répéter?,',
-    FREEBUSY_DISABLED: 'Sorry, freebusy checking is disabled. Would you like to schedule an appointment anyway?'
-  }
-}
+    TIME_NOT_AVAILABLE_REPROMPT: [
+      'Voulez-vous réessayer pour une autre date?',
+    ],
+    APPOINTMENT_TITLE: 'Rendez-vous avec %s',
+    APPOINTMENT_DESCRIPTION: 'ça c'est un rendez-vous téléphonique pour% s avec% s. Nous vous appellerons à% s. Si vous voulez annuler ou modifier ce rendez-vous, veuillez répondre à cet e-mail.',
+    EMAIL_SUBJECT: 'Rendez-vous pour %s avec %s',
+    EMAIL_TEXT: 'ça c'est un rendez-vous téléphonique pour% s avec% s. Nous vous appellerons à% s. Si vous voulez annuler ou modifier ce rendez-vous, veuillez répondre à cet e-mail.',
+    NO_CONFIRM: 'Bien, pour commencer vous pouvez dire: créez-moi un rendez-vous, ou pour annuler dites arrête.',
+    NO_CONFIRM_REPROMOT: 'Vous pouvez dire créez un rendez-vous pour recommencer, ou vous pouvez dire arrête pour annuler.',
+    ENV_NOT_CONFIGURED: 'Une ou plusieurs variables d'environnement ne sont pas définies. Veuillez consulter le fichier readme pour obtenir de l'aide.',
+    PERMISSIONS_REQUIRED: 'Pour créer et confirmer des rendez-vous,% s on aura besoin d'accéder à votre nom, à votre adresse e-mail et à votre numéro de téléphone. Pour fournir  l'accès, veuillez activer les autorisations de profil dans l'application Amazon Alexa.',
+    EMAIL_REQUIRED: 'Il semble que vous n'ayez pas de messagerie. Vous pouvez définir votre e-mail dans l'application  Alexa.',
+    EMAIL_REQUIRED_REPROMPT: 'Veuillez définir votre adresse e-mail dans l'application  Alexa.',
+    NAME_REQUIRED: 'Il semble que votre nom n'est pas défini. Vous pouvez ajouter votre nom dans l'application  Alexa.',
+    NAME_REQUIRED_REPROMPT: 'Veuillez ajouter votre nom dans l'application Alexa.',
+    PHONE_REQUIRED: 'Il semble que votre numéro de téléphone portable n'est pas défini. Vous pouvez ajouter votre numéro de mobile dans l'application Alexa.',
+    PHONE_REQUIRED_REPROMPT: 'Veuillez ajouter votre numéro de téléphone dans l'application Alexa.',
+    ERROR: 'Désolé, je n'ai pas compris. Pouvez-vous répéter ?',
+    ERROR_REPROMPT: 'Pouvez-vous répéter ?',
+    FREEBUSY_DISABLED: 'Désolé, le contrôle de disponibilité est désactivé. Souhaitez-vous quand même créer un rendez-vous ?',
+  },
+};

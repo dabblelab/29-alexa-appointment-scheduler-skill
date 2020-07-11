@@ -1,4 +1,3 @@
-// en.js
 module.exports = {
   translation: {
     SKILL_NAME: 'Appointment Scheduler',

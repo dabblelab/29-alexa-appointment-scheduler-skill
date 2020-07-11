@@ -26,9 +26,9 @@
                             "name": "appointmentDate",
                             "type": "AMAZON.DATE",
                             "samples": [
-                                "on {appointmentDate}",
-                                "I'd like to meet on {appointmentDate}",
-                                "how about {appointmentDate}",
+                                "el {appointmentDate}",
+                                "Me gustaría reunirme el {appointmentDate}",
+                                "¿qué tal {appointmentDate}?",
                                 "{appointmentDate}"
                             ]
                         },
@@ -36,43 +36,43 @@
                             "name": "appointmentTime",
                             "type": "AMAZON.TIME",
                             "samples": [
-                                "how about {appointmentTime}",
-                                "at {appointmentTime}",
+                                "¿qué tal {appointmentTime}",
+                                "a las {appointmentTime}",
                                 "{appointmentTime}"
                             ]
                         }
                     ],
                     "samples": [
                         
-                        "make an appointment on {appointmentDate} at {appointmentTime}" , 
+                        "haga una cita el {appointmentDate} a las {appointmentTime}" , 
                         
-                        "schedule an appointment on {appointmentDate} at {appointmentTime}" , 
+                        "programar una cita el {appointmentDate} a las {appointmentTime}" , 
                         
-                        "schedule an appointment at {appointmentTime} on {appointmentDate}" , 
+                        "programar una cita a las {appointmentTime} el {appointmentDate}" , 
                         
-                        "{appointmentTime} on {appointmentDate}" , 
+                        "{appointmentTime} el {appointmentDate}" , 
                         
-                        "{appointmentDate} at {appointmentTime}" , 
+                        "{appointmentDate} a las {appointmentDate}" , 
                         
-                        "make an appointment for {appointmentDate} at {appointmentTime}" , 
+                        "haga una cita para {appointmentDate} a las {appointmentTime}" , 
                         
-                        "make an appointment for {appointmentDate}" , 
+                        "haga una cita para {appointmentDate}" , 
                         
-                        "make an appointment" , 
+                        "Haga una cita" , 
                         
-                        "set an appointment" , 
+                        "programar una cita" , 
                         
-                        "setup an appointment" , 
+                        "programar una cita" , 
                         
-                        "setup a meeting" , 
+                        "organizar una reunión" , 
                         
-                        "set up a call" , 
+                        "configurar una llamada" , 
                         
-                        "schedule a call" , 
+                        "programar una llamada" , 
                         
-                        "schedule a meeting" , 
+                        "programar una reunión" , 
                         
-                        "schedule an appointment" 
+                        "programar una cita" 
                         
                         
                     ]
@@ -93,11 +93,11 @@
                             "type": "AMAZON.DATE",
                             "samples": [
                                 
-                                "on {appointmentDate}" , 
+                                "el {appointmentDate}" , 
                                 
-                                "check {appointmentDate}" , 
+                                "verificar {appointmentDate}" , 
                                 
-                                "try {appointmentDate}" , 
+                                "intentar {appointmentDate}" , 
                                 
                                 "{appointmentDate}" 
                                 
@@ -108,11 +108,11 @@
                             "type": "AMAZON.TIME",
                             "samples": [
                                 
-                                "check {appointmentTime}" , 
+                                "verificar {appointmentTime}" , 
                                 
-                                "how about {appointmentTime}" , 
+                                "¿qué tal {appointmentTime}?" , 
                                 
-                                "try {appointmentTime}" , 
+                                "intentar {appointmentTime}" , 
                                 
                                 "{appointmentTime}" 
                                 
@@ -198,7 +198,7 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "What day or date would you like to meet?"
+                        "value": "¿Qué día o fecha te gustaría reunir?"
                     }
                 ]
             },
@@ -207,11 +207,11 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "What time works best?"
+                        "value": "¿Qué hora funciona mejor?"
                     },
                     {
                         "type": "PlainText",
-                        "value": "What time would you like to meet?"
+                        "value": "¿A qué hora te gustaría reunir?"
                     }
                 ]
             },
@@ -220,11 +220,11 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "Please tell me your full name."
+                        "value": "Por favor dime tu nombre completo."
                     },
                     {
                         "type": "PlainText",
-                        "value": "What is your full name?"
+                        "value": "¿Cuál es tu nombre completo?"
                     }
                 ]
             },
@@ -233,7 +233,7 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "What is your telephone number?"
+                        "value": "¿Cuál es tu número de teléfono?"
                     }
                 ]
             },
@@ -242,7 +242,7 @@
                 "variations": [
                     {
                         "type": "SSML",
-                        "value": "<speak>I have your meeting request on {appointmentDate} at {appointmentTime}. Is that correct?</speak>"
+                        "value": "<speak>Tengo tu solicitud de reunión el {appointmentDate} a las {appointmentTime}. ¿Es correcto?</speak>"
                     }
                 ]
             },
@@ -251,11 +251,11 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "The date must be tomorrow or later. What date would you like to meet?"
+                        "value": "La fecha debe ser mañana o más tarde. ¿En qué fecha te gustaría reunir?"
                     },
                     {
                         "type": "PlainText",
-                        "value": "The appointment date must be at least one day from now. What day would you like to meet?"
+                        "value": "La fecha de la cita debe ser al menos un día a partir de ahora. ¿Qué día te gustaría reunir?"
                     }
                 ]
             },
@@ -264,7 +264,7 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "What date would you like to check?"
+                        "value": "¿Qué fecha te gustaría consultar?"
                     }
                 ]
             },
@@ -273,7 +273,7 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "What time would you like to check?"
+                        "value": "¿Qué hora te gustaría consultar?"
                     }
                 ]
             }

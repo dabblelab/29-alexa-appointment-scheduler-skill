@@ -1,54 +1,73 @@
 module.exports = {
   translation: {
-    SKILL_NAME: 'Appointment Scheduler',
+    SKILL_NAME: 'Programmatore di appuntamenti',
     GREETING: [
-      'Ciao. Benvenuto a %s. Vorresti programmare un appuntamento?,',
-      'Ciao. Benvenuto a %s. Vorresti programmare un appuntamento?,',
-      'Heilà. Benvenuto a %s. Vorresti programmare un appuntamento?,'
+      'Salve. Benvenuto a %s. Desideri programmare un appuntamento?',
+      'Ciao. Benvenuto a %s. Desideri programmare un appuntamento?',
+      'Ciao. Benvenuto a %s. Desideri programmare un appuntamento?',
     ],
     GREETING_REPROMPT: [
-      'Vorresti programmare un appuntamento?,',
-      'Posso programmare un appuntamento per te?,',
-      'Posso programmare un appuntamento per te. Vorresti iniziare?,'
+      'Desideri programmare un appuntamento?',
+      'Posso programmare un appuntamento per te?',
+      'Posso programmare un appuntamento per te. Vuoi iniziare?',
     ],
     SCHEDULE_YES: [
-      'Okay, programmiamo un appuntamento.,',
-      'Okay, iniziamo.,',
-      'Va bene, fisso il tuo appuntamento.'
+      'Va bene, adesso programmiamo un appuntamento.',
+      'Va bene, iniziamo.',
+      'Ve bene, programmiamo il tuo appuntamento.',
     ],
     SCHEDULE_NO: [
-      'Va bene. Ritorna pure ogni volta che hai bisogno di programmare un appuntamento.,',
-      'Okay, sarò qui ogni volta che hai bisogno di programmare un appuntamento.,',
-      'Va bene, quando sei pronto per programmare un appuntamento, ritorna pure.'
+      'Va bene. Torna pure ogni volta che desideri programmare un appuntamento.',
+      'Va bene, sarò  qui ogni volta che desideri programmare un appuntamento. ',
+      'Va bene, quando sei pronto a programmare un appuntamento, torna pure. ',
     ],
     HELP: [
-      'Questa skill può aiutarti a programmare un appuntamento. Vorresti programmare un appuntamento?'
+      'Questa skill può aiutarti a programmare un appuntamento. Desideri programmare un appuntamento?',
     ],
-    HELP_REPROMPT: [ 'S42S' ],
-    CANCEL_STOP_RESPONSE: [ 'Arrivederci,', 'Okay. Sarò qui se hai bisogno di me.' ],
-    APPOINTMENT_CONFIRM: [ 'Ho la tua richiesta di appuntamento per %s. Corretto?' ],
-    APPOINTMENT_CONFIRM_REPROMPT: [ 'Vuoi che ti mandi la tua richiesta di appuntamento per %s?' ],
-    APPOINTMENT_CONFIRM_COMPLETED: [ 'Il tuo appuntamento per il %s è stato programmato.' ],
-    TIME_AVAILABLE: [ '%s é disponibile. Vuoi prenotarlo?' ],
-    TIME_AVAILABLE_REPROMPT: [ 'Vorresti prenotare %s ?' ],
+    HELP_REPROMPT: [
+      'Desideri programmare un appuntamento?',
+    ],
+    CANCEL_STOP_RESPONSE: [
+      'Arrivederci',
+      'Va bene. Sarò qua se hai bisogno di me. ',
+    ],
+    APPOINTMENT_CONFIRM: [
+      'Ho la tua richiesta di appuntamento con %s programmata per %s. Desideri confermare la richiesta?',
+    ],
+    APPOINTMENT_CONFIRM_REPROMPT: [
+      'Devo inviare la tua richiesta di appuntamento per %s?',
+    ],
+    APPOINTMENT_CONFIRM_COMPLETED: [
+      'Il tuo appuntamento con %s per %s  è stato programmato. Riceverai anche una conferma via posta elettronica. Per favore rispondi alla email di conferma per cancellare o riprogrammare l'appuntamento. Grazie.',
+    ],
+    TIME_AVAILABLE: [
+      '%s è disponibile. Desideri riservarlo? ',
+    ],
+    TIME_AVAILABLE_REPROMPT: [
+      'Desideri riservare %s?',
+    ],
     TIME_NOT_AVAILABLE: [
-      'Scusami, %s non è disponibile. Vorresti provare per un altra volta?'
+      'Mi dispiace, %s non è disponibile. Desideri provare un'altra data?',
     ],
-    TIME_NOT_AVAILABLE_REPROMPT: [ 'Vorresti prenotare per un altra volta?' ],
-    APPOINTMENT_TITLE: ' Appuntamento con %s,',
-    APPOINTMENT_DESCRIPTION: ' Una programmazione di appuntamento da Alexa,',
-    NO_CONFIRM: 'Ok, per ricominciare puoi dire: programma un appuntamento, o per annullare dici stop.,',
-    NO_CONFIRM_REPROMOT: 'Puoi dire programma un appuntamento per ricominciare, oppure stop per annullare.,',
-    ENV_NOT_CONFIGURED: ' Una o più variabili di ambiente non sono impostate. Per favore controlla il file leggimi per aiuto.,',
-    PERMISSIONS_REQUIRED: ' Per favore i abilita permessi profilo nellapp Alexa,',
-    EMAIL_REQUIRED: ' A quanto pare non hai una email impostata. Puoi impostare la tua e-mail nellapp Alexa.,',
-    EMAIL_REQUIRED_REPROMPT: ' Per favore imposta la tua email nellapp Alexa.,',
-    NAME_REQUIRED: ' A quanto pare non hai impostato il tuo nome. Puoi impostare il tuo nome dallapp Alexa.,',
-    NAME_REQUIRED_REPROMPT: ' Per favore imposta il tuo nome nellapp Alexa.,',
-    PHONE_REQUIRED: 'A quanto pare non hai impostato il tuo numero di telefono. Puoi settare il tuo numero di telefono nellapp Alexa.,',
-    PHONE_REQUIRED_REPROMPT: ' Per favore imposta il tuo numero nellapp Alexa.,',
-    ERROR: ' Scusa, non ho capito. Potresti ripetere?,',
-    ERROR_REPROMPT: ' Potresti ripetere?,',
-    FREEBUSY_DISABLED: 'Sorry, freebusy checking is disabled. Would you like to schedule an appointment anyway?'
-  }
-}
+    TIME_NOT_AVAILABLE_REPROMPT: [
+      'Desideri provare un'altra data?',
+    ],
+    APPOINTMENT_TITLE: 'Appuntamento con %s',
+    APPOINTMENT_DESCRIPTION: 'Questo è un appuntamento telefonico per %s con %s. Ti chiameremo al %s. Se desideri cancellare o cambiare questo appuntamento, per favore rispondi a questa email.',
+    EMAIL_SUBJECT: 'Appuntamento per %s con %s',
+    EMAIL_TEXT: 'Questo è un appuntamento telefonico per %s con %s. Ti chiameremo al %s. Se desideri cancellare o cambiare questo appuntamento, per favore rispondi a questa email.',
+    NO_CONFIRM: 'Va bene, per ricominciare da capo puoi dire: programma un appuntamento, o per cancellare dì stop. ',
+    NO_CONFIRM_REPROMOT: 'Puoi dire programma un appuntamento per ricominciare da capo, oppure stop per cancellare.',
+    ENV_NOT_CONFIGURED: 'Una o più variabili d'ambiente non sono definite. Per favore consulta il file readme per ottenere aiuto. ',
+    PERMISSIONS_REQUIRED: 'Per prenotare e confermare appuntamenti, %s dovrà avere accesso al tuo nome, al tuo indirizzo di posta elettronica e al tuo numero di telefono. Per fornire l'accesso, per favore abilita le autorizzazioni del profilo nell'Alexa app. ',
+    EMAIL_REQUIRED: 'Sembra che tu non abbia configurato il tuo indirizzo di posta elettronica. Puoi configurare il tuo indirizzo di posta elettronica nell'Alexa app.',
+    EMAIL_REQUIRED_REPROMPT: 'Per favore configura il tuo indirizzo di posta elettronica nell'Alexa app.',
+    NAME_REQUIRED: 'Sembra che tu non abbia configurato il tuo nome. Puoi configurare il tuo nome nell'Alexa app.',
+    NAME_REQUIRED_REPROMPT: 'Per favore configura il tuo nome nell'Alexa app.',
+    PHONE_REQUIRED: 'Sembra che tu non abbia configurato il tuo numero di cellulare. Puoi configurare il tuo numero di cellulare nell'Alexa app.',
+    PHONE_REQUIRED_REPROMPT: 'Per favore configura il tuo numero di telefono nell'Alexa app.',
+    ERROR: 'Mi dispiace, non ho capito. Puoi ripetere?',
+    ERROR_REPROMPT: 'Puoi ripetere?',
+    FREEBUSY_DISABLED: 'Mi dispiace, la verifica di disponibilità è disabilitata. Desideri comunque programmare un appuntamento?',
+  },
+};
