@@ -514,7 +514,7 @@ const LocalizationInterceptor = {
 
     const localizationClient = i18n.use(sprintf).init({
       lng: requestEnvelope.request.locale,
-      fallbackLng: 'en',
+      fallbackLng: 'en-US',
       resources: languageStrings,
     });
 
