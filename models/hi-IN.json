@@ -26,9 +26,9 @@
                             "name": "appointmentDate",
                             "type": "AMAZON.DATE",
                             "samples": [
-                                "on {appointmentDate}",
-                                "I'd like to meet on {appointmentDate}",
-                                "how about {appointmentDate}",
+                                "{appointmentDate} पर",
+                                "मैं आपसे {appointmentDate} मिलना चाहता हूँ",
+                                "कैसा रहेगा {appointmentDate}",
                                 "{appointmentDate}"
                             ]
                         },
@@ -36,43 +36,43 @@
                             "name": "appointmentTime",
                             "type": "AMAZON.TIME",
                             "samples": [
-                                "how about {appointmentTime}",
-                                "at {appointmentTime}",
+                                "कैसा रहेगा {appointmentDate}",
+                                "{appointmentTime} पर",
                                 "{appointmentTime}"
                             ]
                         }
                     ],
                     "samples": [
                         
-                        "make an appointment on {appointmentDate} at {appointmentTime}" , 
+                        "{appointmentDate} और {appointmentTime} पर एक नियुक्ति करें" , 
                         
-                        "schedule an appointment on {appointmentDate} at {appointmentTime}" , 
+                        "{appointmentDate} और {appointmentTime} पर एक नियुक्ति schedule करें" , 
                         
-                        "schedule an appointment at {appointmentTime} on {appointmentDate}" , 
+                        "{appointmentDate} और {appointmentTime} पर एक नियुक्ति schedule करें" , 
                         
-                        "{appointmentTime} on {appointmentDate}" , 
+                        "{appointmentTime} और  {appointmentDate} पर " , 
                         
-                        "{appointmentDate} at {appointmentTime}" , 
+                        "{appointmentTime} और {appointmentDate} पर " , 
                         
-                        "make an appointment for {appointmentDate} at {appointmentTime}" , 
+                        "{appointmentDate} और {appointmentTime} पर एक नियुक्ति करें" , 
                         
-                        "make an appointment for {appointmentDate}" , 
+                        "{appointmentDate} पर एक नियुक्ति करें" , 
                         
-                        "make an appointment" , 
+                        "एक नियुक्ति करो " , 
                         
-                        "set an appointment" , 
+                        "एक नियुक्ति लें" , 
                         
-                        "setup an appointment" , 
+                        "मिलने का समय निर्धारित करो" , 
                         
-                        "setup a meeting" , 
+                        "एक बैठक बुलाओ" , 
                         
-                        "set up a call" , 
+                        "एक call set करें" , 
                         
-                        "schedule a call" , 
+                        "call नियत करे " , 
                         
-                        "schedule a meeting" , 
+                        "बैठक निर्धारित करें" , 
                         
-                        "schedule an appointment" 
+                        "नियुक्ति का समय" 
                         
                         
                     ]
@@ -93,11 +93,11 @@
                             "type": "AMAZON.DATE",
                             "samples": [
                                 
-                                "on {appointmentDate}" , 
+                                "{appointmentDate} पर " , 
                                 
-                                "check {appointmentDate}" , 
+                                "{appointmentDate} जाँच करो " , 
                                 
-                                "try {appointmentDate}" , 
+                                "{appointmentDate} पर प्रयत्न करो " , 
                                 
                                 "{appointmentDate}" 
                                 
@@ -108,11 +108,11 @@
                             "type": "AMAZON.TIME",
                             "samples": [
                                 
-                                "check {appointmentTime}" , 
+                                "{appointmentTime} जाँच करो " , 
                                 
-                                "how about {appointmentTime}" , 
+                                "{appointmentTime} कैसा रहेगा" , 
                                 
-                                "try {appointmentTime}" , 
+                                "{appointmentTime} पर प्रयत्न करो " , 
                                 
                                 "{appointmentTime}" 
                                 
@@ -198,7 +198,7 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "What day or date would you like to meet?"
+                        "value": "आप किस दिन या किस तारीख को मिलना चाहेंगे?"
                     }
                 ]
             },
@@ -207,11 +207,11 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "What time works best?"
+                        "value": "किस समय सबसे अच्छा काम करता है?"
                     },
                     {
                         "type": "PlainText",
-                        "value": "What time would you like to meet?"
+                        "value": "आप किस समय मिलना चाहेंगे?"
                     }
                 ]
             },
@@ -220,11 +220,11 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "Please tell me your full name."
+                        "value": "कृपया मुझे अपना पूरा नाम बताइए।"
                     },
                     {
                         "type": "PlainText",
-                        "value": "What is your full name?"
+                        "value": "आपका पूरा नाम क्या है?"
                     }
                 ]
             },
@@ -233,7 +233,7 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "What is your telephone number?"
+                        "value": "आपका telephone  नम्बर क्या है?"
                     }
                 ]
             },
@@ -242,7 +242,7 @@
                 "variations": [
                     {
                         "type": "SSML",
-                        "value": "<speak>I have your meeting request on {appointmentDate} at {appointmentTime}. Is that correct?</speak>"
+                        "value": "<speak>मेरा आपकी {appointmentDate} पर {appointmentTime} पर अनुरोध है। क्या ये  सही है?</speak>"
                     }
                 ]
             },
@@ -251,11 +251,11 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "The date must be tomorrow or later. What date would you like to meet?"
+                        "value": "तारीख कल या बाद की होनी चाहिए। आप किस तारीख को मिलना चाहेंगे?"
                     },
                     {
                         "type": "PlainText",
-                        "value": "The appointment date must be at least one day from now. What day would you like to meet?"
+                        "value": "नियुक्ति की तिथि अब से कम से कम एक दिन होनी चाहिए। आप किस दिन मिलना चाहेंगे?"
                     }
                 ]
             },
@@ -264,7 +264,7 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "What date would you like to check?"
+                        "value": "आप किस तारीख को जांचना चाहेंगे?"
                     }
                 ]
             },
@@ -273,7 +273,7 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "What time would you like to check?"
+                        "value": "आप किस समय जांचना चाहेंगे?"
                     }
                 ]
             }
