@@ -26,9 +26,9 @@
                             "name": "appointmentDate",
                             "type": "AMAZON.DATE",
                             "samples": [
-                                "{appointmentDate}に",
-                                "{appointmentDate}にお会いしたいです。",
-                                "{appointmentDate}はいかがですか？",
+                                "{appointmentDate} に",
+                                "{appointmentDate} にお会いしたいです",
+                                "{appointmentDate} はいかがですか",
                                 "{appointmentDate}"
                             ]
                         },
@@ -36,45 +36,28 @@
                             "name": "appointmentTime",
                             "type": "AMAZON.TIME",
                             "samples": [
-                                "{appointmentTime}はいかがですか？",
-                                "{appointmentTime}に",
+                                "{appointmentTime} はいかがですか",
+                                "{appointmentTime} に",
                                 "{appointmentTime}"
                             ]
                         }
                     ],
                     "samples": [
-                        
-                        "{appointmentDate} の{appointmentTime}にアポイントをとってください" , 
-                        
-                        "{appointmentDate} の{appointmentTime}にアポイントをスケジュールしてください" , 
-                        
-                        "{appointmentTime} 、{appointmentDate}にアポイントをスケジュールしてください" , 
-                        
-                        "{appointmentTime} 、{appointmentDate}" , 
-                        
-                        "{appointmentDate} の{appointmentTime}" , 
-                        
-                        "{appointmentDate} の {appointmentTime}にアポイントを取得" , 
-                        
-                        "{appointmentDate} の アポイントを取得" , 
-                        
-                        "アポイントを取得" , 
-                        
-                        "アポイントを取得" , 
-                        
-                        "アポイントを取得" , 
-                        
-                        "打ち合わせを設定" , 
-                        
-                        "電話会議を設定" , 
-                        
-                        "電話会議を予約" , 
-                        
-                        "打ち合わせを予約" , 
-                        
-                        "アポイントを取得" 
-                        
-                        
+                        "{appointmentDate} {appointmentTime} にアポイントをとってください",
+                        "{appointmentDate} {appointmentTime} にアポイントをスケジュールしてください",
+                        "{appointmentTime} {appointmentDate} にアポイントをスケジュールしてください",
+                        "{appointmentTime} {appointmentDate}",
+                        "{appointmentDate} {appointmentTime}",
+                        "{appointmentDate} {appointmentTime} にアポイントを取得",
+                        "{appointmentDate} の アポイントを取得",
+                        "アポイントを取得",
+                        "アポイントを取得",
+                        "アポイントを取得",
+                        "打ち合わせを設定",
+                        "電話会議を設定",
+                        "電話会議を予約",
+                        "打ち合わせを予約",
+                        "アポイントを取得"
                     ]
                 },
                 {
@@ -92,30 +75,20 @@
                             "name": "appointmentDate",
                             "type": "AMAZON.DATE",
                             "samples": [
-                                
-                                "{appointmentDate}に" , 
-                                
-                                "{appointmentDate}を確認" , 
-                                
-                                "{appointmentDate}を試して" , 
-                                
-                                "{appointmentDate}" 
-                                
+                                "{appointmentDate} に",
+                                "{appointmentDate} を確認",
+                                "{appointmentDate} を試して",
+                                "{appointmentDate}"
                             ]
                         },
                         {
                             "name": "appointmentTime",
                             "type": "AMAZON.TIME",
                             "samples": [
-                                
-                                "{appointmentTime}を確認" , 
-                                
-                                "{appointmentTime}はどうですか？" , 
-                                
-                                "{appointmentTime}を試して" , 
-                                
-                                "{appointmentTime}" 
-                                
+                                "{appointmentTime} を確認",
+                                "{appointmentTime} はどうですか",
+                                "{appointmentTime} を試して",
+                                "{appointmentTime}"
                             ]
                         }
                     ],
@@ -242,7 +215,7 @@
                 "variations": [
                     {
                         "type": "SSML",
-                        "value": "<speak>{appointmentDate} 、 {appointmentTime}の打ち合わせで間違いないですか。</speak>"
+                        "value": "<speak>{appointmentDate} {appointmentTime}の打ち合わせで間違いないですか。</speak>"
                     }
                 ]
             },

@@ -28,7 +28,7 @@
                             "samples": [
                                 "el {appointmentDate}",
                                 "Me gustaría reunirme el {appointmentDate}",
-                                "¿qué tal {appointmentDate}?",
+                                "qué tal {appointmentDate}",
                                 "{appointmentDate}"
                             ]
                         },
@@ -36,45 +36,28 @@
                             "name": "appointmentTime",
                             "type": "AMAZON.TIME",
                             "samples": [
-                                "¿qué tal {appointmentTime}",
+                                "qué tal {appointmentTime}",
                                 "a las {appointmentTime}",
                                 "{appointmentTime}"
                             ]
                         }
                     ],
                     "samples": [
-                        
-                        "haga una cita el {appointmentDate} a las {appointmentTime}" , 
-                        
-                        "programar una cita el {appointmentDate} a las {appointmentTime}" , 
-                        
-                        "programar una cita a las {appointmentTime} el {appointmentDate}" , 
-                        
-                        "{appointmentTime} el {appointmentDate}" , 
-                        
-                        "{appointmentDate} a las {appointmentDate}" , 
-                        
-                        "haga una cita para {appointmentDate} a las {appointmentTime}" , 
-                        
-                        "haga una cita para {appointmentDate}" , 
-                        
-                        "Haga una cita" , 
-                        
-                        "programar una cita" , 
-                        
-                        "programar una cita" , 
-                        
-                        "organizar una reunión" , 
-                        
-                        "configurar una llamada" , 
-                        
-                        "programar una llamada" , 
-                        
-                        "programar una reunión" , 
-                        
-                        "programar una cita" 
-                        
-                        
+                        "haga una cita el {appointmentDate} a las {appointmentTime}",
+                        "programar una cita el {appointmentDate} a las {appointmentTime}",
+                        "programar una cita a las {appointmentTime} el {appointmentDate}",
+                        "{appointmentTime} el {appointmentDate}",
+                        "{appointmentDate} a las {appointmentDate}",
+                        "haga una cita para {appointmentDate} a las {appointmentTime}",
+                        "haga una cita para {appointmentDate}",
+                        "Haga una cita",
+                        "programar una cita",
+                        "programar una cita",
+                        "organizar una reunión",
+                        "configurar una llamada",
+                        "programar una llamada",
+                        "programar una reunión",
+                        "programar una cita"
                     ]
                 },
                 {
@@ -92,30 +75,20 @@
                             "name": "appointmentDate",
                             "type": "AMAZON.DATE",
                             "samples": [
-                                
-                                "el {appointmentDate}" , 
-                                
-                                "verificar {appointmentDate}" , 
-                                
-                                "intentar {appointmentDate}" , 
-                                
-                                "{appointmentDate}" 
-                                
+                                "el {appointmentDate}",
+                                "verificar {appointmentDate}",
+                                "intentar {appointmentDate}",
+                                "{appointmentDate}"
                             ]
                         },
                         {
                             "name": "appointmentTime",
                             "type": "AMAZON.TIME",
                             "samples": [
-                                
-                                "verificar {appointmentTime}" , 
-                                
-                                "¿qué tal {appointmentTime}?" , 
-                                
-                                "intentar {appointmentTime}" , 
-                                
-                                "{appointmentTime}" 
-                                
+                                "verificar {appointmentTime}",
+                                "qué tal {appointmentTime}",
+                                "intentar {appointmentTime}",
+                                "{appointmentTime}"
                             ]
                         }
                     ],
