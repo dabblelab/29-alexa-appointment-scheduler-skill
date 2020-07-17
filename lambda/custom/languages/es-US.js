@@ -2,9 +2,9 @@ module.exports = {
   translation: {
     SKILL_NAME: 'Programador de citas',
     GREETING: [
-      'días. Bienvenido a% s. ¿Te gustaría programar una cita?',
-      'Hola. Bienvenido a% s. ¿Te gustaría programar una cita?',
-      'Hola. Bienvenido a% s. ¿Te gustaría programar una cita?',
+      'días. Bienvenido a %s. ¿Te gustaría programar una cita?',
+      'Hola. Bienvenido a %s. ¿Te gustaría programar una cita?',
+      'Hola. Bienvenido a %s. ¿Te gustaría programar una cita?',
     ],
     GREETING_REPROMPT: [
       '¿Te gustaría programar una cita?',
@@ -32,34 +32,34 @@ module.exports = {
       'Bueno. Estaré aquí si me necesitas.',
     ],
     APPOINTMENT_CONFIRM: [
-      'Tengo tu solicitud de cita con% s configurado para% s. ¿Deseas confirmar esta solicitud?',
+      'Tengo tu solicitud de cita con %s configurado para %s. ¿Deseas confirmar esta solicitud?',
     ],
     APPOINTMENT_CONFIRM_REPROMPT: [
-      '¿Debo enviar tu solicitud de cita para% s?',
+      '¿Debo enviar tu solicitud de cita para %s?',
     ],
     APPOINTMENT_CONFIRM_COMPLETED: [
-      'Tu cita con% s en% s ha sido programada. También recibirás un correo electrónico de confirmación. Responde a la confirmación por correo electrónico para cancelar o reprogramar. Gracias.',
+      'Tu cita con %s en %s ha sido programada. También recibirás un correo electrónico de confirmación. Responde a la confirmación por correo electrónico para cancelar o reprogramar. Gracias.',
     ],
     TIME_AVAILABLE: [
-      '% s está disponible. ¿Quieres reservarlo?',
+      '%s está disponible. ¿Quieres reservarlo?',
     ],
     TIME_AVAILABLE_REPROMPT: [
-      '¿Desea reservar% s?',
+      '¿Desea reservar %s?',
     ],
     TIME_NOT_AVAILABLE: [
-      'Lo sentimos,% s no está disponible. ¿Te gustaría probar otro momento?',
+      'Lo sentimos, %s no está disponible. ¿Te gustaría probar otro momento?',
     ],
     TIME_NOT_AVAILABLE_REPROMPT: [
       '¿Te gustaría probar en otro momento?',
     ],
-    APPOINTMENT_TITLE: 'Cita con% s',
-    APPOINTMENT_DESCRIPTION: 'Esta es una cita telefónica para% s con% s. Te llamaremos al% s. Si necesitas cancelar o cambiar esta cita, responde a este correo electrónico.',
-    EMAIL_SUBJECT: 'Cita para% s con% s',
-    EMAIL_TEXT: 'Esta es una cita telefónica para% s con% s. Te llamaremos al% s. Si necesita cancelar o cambiar esta cita, responda a este correo electrónico.',
+    APPOINTMENT_TITLE: 'Cita con %s',
+    APPOINTMENT_DESCRIPTION: 'Esta es una cita telefónica para %s con %s. Te llamaremos al %s. Si necesitas cancelar o cambiar esta cita, responde a este correo electrónico.',
+    EMAIL_SUBJECT: 'Cita para %s con %s',
+    EMAIL_TEXT: 'Esta es una cita telefónica para %s con %s. Te llamaremos al %s. Si necesita cancelar o cambiar esta cita, responda a este correo electrónico.',
     NO_CONFIRM: 'Bien, para comenzar de nuevo puedes decir: programar una cita o para cancelar di detener.',
     NO_CONFIRM_REPROMOT: 'Puedes decir programar una cita para comenzar de nuevo, o parar para cancelar.',
     ENV_NOT_CONFIGURED: 'No se establece una o más variables de entorno. Consulta el archivo Léame para obtener ayuda.',
-    PERMISSIONS_REQUIRED: 'Para reservar y confirmar citas,% s necesitará acceso a su nombre, dirección de correo electrónico y número de teléfono. Para proporcionar acceso, habilita los permisos de perfil en la aplicación Amazon Alexa.',
+    PERMISSIONS_REQUIRED: 'Para reservar y confirmar citas, %s necesitará acceso a su nombre, dirección de correo electrónico y número de teléfono. Para proporcionar acceso, habilita los permisos de perfil en la aplicación Amazon Alexa.',
     EMAIL_REQUIRED: 'Parece que no tienes un correo electrónico configurado. Puedes configurar tu correo electrónico en la aplicación Alexa.',
     EMAIL_REQUIRED_REPROMPT: 'Configura su dirección de correo electrónico en la aplicación  Alexa.',
     NAME_REQUIRED: 'Parece que no tienes tu nombre establecido. Puedes configurar tu nombre en la aplicación Alexa.',
