@@ -34,7 +34,67 @@
           "smallIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-sm.png",
           "largeIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-lg.png"
         },
+
+        "en-GB": {
+          "name": "Appointment Scheduler",
+          "examplePhrases": [
+            
+            "Alexa open Appointment Scheduler" , 
+            
+            "Alexa launch Appointment Scheduler" , 
+            
+            "Alexa start Appointment Scheduler" 
+            
+          ],
+          "smallIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-sm.png",
+          "largeIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-lg.png"
+        },
+
+        "en-AU": {
+          "name": "Appointment Scheduler",
+          "examplePhrases": [
+            
+            "Alexa open Appointment Scheduler" , 
+            
+            "Alexa launch Appointment Scheduler" , 
+            
+            "Alexa start Appointment Scheduler" 
+            
+          ],
+          "smallIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-sm.png",
+          "largeIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-lg.png"
+        },
         
+        "en-CA": {
+          "name": "Appointment Scheduler",
+          "examplePhrases": [
+            
+            "Alexa open Appointment Scheduler" , 
+            
+            "Alexa launch Appointment Scheduler" , 
+            
+            "Alexa start Appointment Scheduler" 
+            
+          ],
+          "smallIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-sm.png",
+          "largeIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-lg.png"
+        },
+
+        "en-IN": {
+          "name": "Appointment Scheduler",
+          "examplePhrases": [
+            
+            "Alexa open Appointment Scheduler" , 
+            
+            "Alexa launch Appointment Scheduler" , 
+            
+            "Alexa start Appointment Scheduler" 
+            
+          ],
+          "smallIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-sm.png",
+          "largeIconUri": "https://s3.amazonaws.com/cdn.dabblelab.com/img/skill-template-default-lg.png"
+        },
+
         "de-DE": {
           "name": "Alexa, öffnen Terminplaner",
           "examplePhrases": [
